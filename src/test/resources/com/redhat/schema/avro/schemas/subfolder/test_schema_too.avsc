@@ -1,0 +1,10 @@
+{
+  "namespace": "com.redhat.schema.avro.schemas",
+  "type": "record",
+  "name": "TestingSchemaToo",
+  "fields": [
+      {"name": "anotherName", "type": "string"},
+      {"name": "anotherId", "type": "double"},
+      {"name": "addedField", "type": "string"}
+  ]
+}

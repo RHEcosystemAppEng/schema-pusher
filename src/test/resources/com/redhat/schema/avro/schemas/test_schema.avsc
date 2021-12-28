@@ -1,0 +1,9 @@
+{
+  "namespace": "com.redhat.schema.avro.schemas",
+  "type": "record",
+  "name": "TestingSchema",
+  "fields": [
+      {"name": "name", "type": "string"},
+      {"name": "id", "type": "double"}
+  ]
+}

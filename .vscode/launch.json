@@ -1,0 +1,24 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "java",
+      "name": "Launch Schema Pusher CLI",
+      "request": "launch",
+      "mainClass": "com.redhat.schema.MainApp",
+      "projectName": "push-schemas-to-service-registry",
+      "env": {
+        "IN_DEV_MODE": true
+      },
+      "envFile": "${workspaceFolder}/.env",
+      "args": [
+        "--bootstrap-url=https://<kafka-bootstrap-url-goes-here>:443",
+        "--registry-url=http://<service-registry-url-goes-here>",
+        "--naming-strategy=topic_record",
+        "--topic=topic1",
+        "--topic=anothertopic1",
+        "--directory=${workspaceFolder}/src/test/resources/com/redhat/schema/avro/schemas/"
+      ]
+    }
+  ]
+}
