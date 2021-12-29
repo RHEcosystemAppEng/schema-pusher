@@ -14,6 +14,7 @@ import java.nio.file.Paths;
 import java.util.concurrent.Future;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.IndexedRecord;
+import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
 import org.junit.jupiter.api.Test;
@@ -26,7 +27,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 class Avro_schema_pusher_implementation_Test {
-  @Mock private AvroProducer mockProducer;
+  @Mock private KafkaProducer<String, IndexedRecord> mockProducer;
   @Spy private Schema.Parser spyParser;
 
   @InjectMocks private AvroPusher sut;

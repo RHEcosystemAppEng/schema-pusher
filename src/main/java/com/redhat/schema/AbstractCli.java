@@ -5,9 +5,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+
+import picocli.CommandLine;
 import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.ParameterException;
+import picocli.CommandLine.ParseResult;
 import picocli.CommandLine.Spec;
 import picocli.CommandLine.Model.CommandSpec;
 
@@ -58,6 +61,14 @@ public abstract class AbstractCli implements Runnable {
       return this.topic;
     }
   }
+
+  int executionStrategy(final ParseResult parseResult) {
+    initialize();
+    validate();
+    return new CommandLine.RunLast().execute(parseResult);
+  }
+
+  protected abstract void initialize();
 
   protected void validate() {
     if (getTopicAggregators().size() > 1 && !getNamingStrategy().equals(NamingStrategy.TOPIC_RECORD)) {

@@ -36,8 +36,11 @@ class Cli_options_and_utility_methods_Test {
   void initialize() {
     // instantiate an anonymous abstract cli as the sut
     sut = new AbstractCli() {
+      public void initialize() {
+        // not needed for this test class
+      }
       public void run() {
-        // Not needed for this test class
+        // not needed for this test class
       }
     };
     // load the instance as a command line

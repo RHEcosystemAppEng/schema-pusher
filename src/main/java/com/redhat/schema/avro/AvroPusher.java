@@ -1,6 +1,6 @@
 package com.redhat.schema.avro;
 
-import com.redhat.schema.SchemaPusher;
+import com.redhat.schema.AbstractSchemaPusher;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -8,19 +8,20 @@ import java.util.concurrent.Future;
 import org.apache.avro.Schema.Parser;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.IndexedRecord;
+import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
 
 /**
- * The AVRO Pusher wraps {@link SchemaPusher} using {@code String} as the key type and
+ * The AVRO Pusher wraps {@link AbstractSchemaPusher} using {@code String} as the key type and
  * {@code org.apache.avro.generic.IndexedRecord} as the value type.
  */
-public final class AvroPusher extends SchemaPusher<String, IndexedRecord> {
+public final class AvroPusher extends AbstractSchemaPusher<String, IndexedRecord> {
   /**
    * Constructor takes a producer and a parser.
    * @param producer an {@link AvroProducer} instance for producing messages.
    */
-  public AvroPusher(final AvroProducer producer) {
+  public AvroPusher(final KafkaProducer<String, IndexedRecord> producer) {
     super(producer);
   }
 

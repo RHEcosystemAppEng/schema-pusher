@@ -28,6 +28,7 @@
     <mockito.version>4.1.0</mockito.version>
     <picocli.version>4.6.2</picocli.version>
     <slf4j.version>1.7.32</slf4j.version>
+    <springframework.version>5.3.14</springframework.version>
     <!-- Plugins -->
     <maven-clean-plugin.version>3.1.0</maven-clean-plugin.version>
     <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
@@ -75,6 +76,11 @@
   <dependencyManagement>
     <dependencies>
       <dependency>
+        <groupId>info.picocli</groupId>
+        <artifactId>picocli</artifactId>
+        <version>${picocli.version}</version>
+      </dependency>
+      <dependency>
         <groupId>io.confluent</groupId>
         <artifactId>kafka-avro-serializer</artifactId>
         <version>${kafka-avro-serializer.version}</version>
@@ -85,9 +91,9 @@
         <version>${kafka.version}</version>
       </dependency>
       <dependency>
-        <groupId>info.picocli</groupId>
-        <artifactId>picocli</artifactId>
-        <version>${picocli.version}</version>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-context</artifactId>
+        <version>${springframework.version}</version>
       </dependency>
       <!-- Logging Dependencies -->
       <dependency>
@@ -202,6 +208,10 @@
 
   <dependencies>
     <dependency>
+      <groupId>info.picocli</groupId>
+      <artifactId>picocli</artifactId>
+    </dependency>
+    <dependency>
       <groupId>io.confluent</groupId>
       <artifactId>kafka-avro-serializer</artifactId>
     </dependency>
@@ -210,8 +220,8 @@
       <artifactId>kafka-clients</artifactId>
     </dependency>
     <dependency>
-      <groupId>info.picocli</groupId>
-      <artifactId>picocli</artifactId>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-context</artifactId>
     </dependency>
     <!-- Logging Dependencies -->
     <dependency>

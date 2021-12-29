@@ -12,14 +12,14 @@ import org.apache.kafka.clients.producer.RecordMetadata;
  * @param <K> the key type.
  * @param <V> the value type.
  */
-public abstract class SchemaPusher<K, V> {
+public abstract class AbstractSchemaPusher<K, V> {
   private final KafkaProducer<K, V> producer;
 
   /**
    * Constructor takes a {@code org.apache.kafka.clients.producer.KafkaProducer}.
    * @param setProducer the producer instance for encapsulating.
    */
-  protected SchemaPusher(final KafkaProducer<K, V> setProducer) {
+  protected AbstractSchemaPusher(final KafkaProducer<K, V> setProducer) {
     this.producer = setProducer;
   }
 
