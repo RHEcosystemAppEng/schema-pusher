@@ -30,7 +30,7 @@ class Avro_schema_pusher_implementation_Test {
   @Mock private KafkaProducer<String, IndexedRecord> mockProducer;
   @Spy private Schema.Parser spyParser;
 
-  @InjectMocks private AvroPusher sut;
+  @InjectMocks private AvroSchemaPusher sut;
 
   @Test
   void invoke_the_overridden_push_method_with_a_testing_schema_and_a_topic(

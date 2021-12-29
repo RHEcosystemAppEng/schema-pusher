@@ -14,7 +14,7 @@ import picocli.CommandLine.ParseResult;
 import picocli.CommandLine.Spec;
 import picocli.CommandLine.Model.CommandSpec;
 
-public abstract class AbstractCli implements Runnable {
+public abstract class PushCli implements Runnable {
   @Option(
     names = {"-b", "--bootstrap-url"},
     description = "The url for Kafka's bootstrap server.",

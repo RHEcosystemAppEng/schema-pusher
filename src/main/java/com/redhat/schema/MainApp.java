@@ -8,7 +8,7 @@ import picocli.CommandLine;
 public final class MainApp {
   public static void main(final String... args) {
     try (var context = new AnnotationConfigApplicationContext(BeansConfig.class)) {
-      var cliImpl = context.getBean(AbstractCli.class);
+      var cliImpl = context.getBean(PushCli.class);
       var cli = new CommandLine(cliImpl);
       cli.setExecutionStrategy(cliImpl::executionStrategy);
       cli.setCaseInsensitiveEnumValuesAllowed(true);

@@ -3,11 +3,10 @@ package com.redhat.schema.avro;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
-import com.redhat.schema.AbstractCli;
-import org.apache.avro.Schema.Parser;
-import org.apache.kafka.clients.producer.KafkaProducer;
+import com.redhat.schema.PushCli;
+import com.redhat.schema.SchemaPusher;
 import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.stereotype.Component;
 import picocli.CommandLine.Command;
@@ -19,17 +18,20 @@ import picocli.CommandLine.Command;
   mixinStandardHelpOptions = true,
   version = "0.0.1-SNAPSHOT"
 )
-public final class AvroPushCli extends AbstractCli {
-  private static final Logger LOG = Logger.getLogger(AvroPushCli.class.getName());
+public final class AvroPushCli extends PushCli {
+  private static final Logger LOGGER = Logger.getLogger(AvroPushCli.class.getName());
 
-  private GenericApplicationContext context;
+  private final GenericApplicationContext context;
+  private final SchemaPusher schemaPusher;
 
-  public AvroPushCli(final GenericApplicationContext setContext) {
+  public AvroPushCli(final GenericApplicationContext setContext, final SchemaPusher setSchemaPusher) {
     this.context = setContext;
+    this.schemaPusher = setSchemaPusher;
   }
 
   @Override
   protected void initialize() {
+    LOGGER.finer(() -> "registering the connection info as context beans");
     context.registerBean(BeansConfig.Qualifiers.KAFKA_BOOTSTRAP_URL, String.class, getKafkaBootstrap());
     context.registerBean(BeansConfig.Qualifiers.SERVICE_REGISTRY_URL, String.class, getServiceRegistry());
     context.registerBean(BeansConfig.Qualifiers.NAMING_STRATEGY, String.class, getNamingStrategy().toString());
@@ -37,37 +39,15 @@ public final class AvroPushCli extends AbstractCli {
 
   @Override
   public void run() {
-    List<Path> filePaths;
+    List<Path> schemas;
     try {
-      filePaths = getPathList(getDirectory());
+      schemas = getPathList(getDirectory());
     } catch (final IOException ioe) {
-      LOG.severe(() -> String.format("failed to get files from directory: '%s'", getDirectory()));
+      LOGGER.log(
+        Level.SEVERE, ioe, () -> String.format("failed to get schema files from directory: '%s'", getDirectory()));
       return;
     }
-
-    try (var producer = context.getBean(KafkaProducer.class)) {
-      @SuppressWarnings("unchecked")
-      var pusher = new AvroPusher(producer);
-
-      getTopicAggregators().parallelStream().forEach(ta -> {
-        var parser = new Parser();
-        filePaths.stream().forEach(path -> {
-          try {
-            pusher.push(parser, path, ta.getTopic()).get();
-            logMessage(path.toFile().getName(), "Success.");
-          } catch (final ExecutionException | InterruptedException | IOException exc) {
-            if (exc instanceof InterruptedException) {
-              Thread.currentThread().interrupt();
-            }
-            logMessage(path.toFile().getName(), exc.getMessage());
-          }
-        });
-      });
-      producer.flush();
-    }
-  }
-
-  void logMessage(final String fileName, final String message) {
-    LOG.info(() -> String.format("%s%n%s%n", fileName, message));
+    var topics = getTopicAggregators().stream().map(TopicAggregator::getTopic).toList();
+    schemaPusher.push(topics, schemas);
   }
 }

@@ -29,13 +29,13 @@ class Cli_options_and_utility_methods_Test {
   private final static String FAKE_DIRECTORY = "/path/to/schemas/";
 
 
-  private AbstractCli sut;
+  private PushCli sut;
   private CommandLine cmd;
 
   @BeforeEach
   void initialize() {
     // instantiate an anonymous abstract cli as the sut
-    sut = new AbstractCli() {
+    sut = new PushCli() {
       public void initialize() {
         // not needed for this test class
       }
