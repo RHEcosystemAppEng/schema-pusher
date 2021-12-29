@@ -8,9 +8,9 @@ import org.junitpioneer.jupiter.cartesian.CartesianTest;
 import org.junitpioneer.jupiter.cartesian.CartesianTest.Enum;
 import org.junitpioneer.jupiter.cartesian.CartesianTest.Values;
 
-class Avro_Properties_Test {
+class Verify_the_properties_aggregation_Test {
   @CartesianTest
-  void test_properties_aggregation_for_all_naming_strategies(
+  void verify_properties_assignment_for_all_naming_strategies_and_urls_combinations(
     @Values(strings = {"http://fake-no-secured-bootstrap", "https://fake-secured-bootstrap"}) final String bootstrapUrl,
     @Values(strings = {"http://fakeregistry.example", "http://fakeregistry.example/"}) final String registryUrl,
     @Enum NamingStrategy strategy
