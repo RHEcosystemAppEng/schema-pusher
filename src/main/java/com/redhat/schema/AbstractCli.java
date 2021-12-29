@@ -66,7 +66,7 @@ public abstract class AbstractCli implements Runnable {
     }
   }
 
-  protected final List<Path> getFilesPath(final String directory) throws IOException {
+  protected final List<Path> getPathList(final String directory) throws IOException {
     try (var walkStream = Files.walk(Paths.get(directory))) {
       return walkStream.filter(Files::isRegularFile).toList();
     }

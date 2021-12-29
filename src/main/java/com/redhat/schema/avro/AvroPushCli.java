@@ -24,7 +24,7 @@ public final class AvroPushCli extends AbstractCli {
     var propsAggregator = new AvroProperties(getKafkaBootstrap(), getServiceRegistry(), getNamingStrategy());
     List<Path> filePaths;
     try {
-      filePaths = getFilesPath(getDirectory());
+      filePaths = getPathList(getDirectory());
     } catch (final IOException ioe) {
       LOG.severe(() -> String.format("failed to get files from directory: '%s'", getDirectory()));
       return;

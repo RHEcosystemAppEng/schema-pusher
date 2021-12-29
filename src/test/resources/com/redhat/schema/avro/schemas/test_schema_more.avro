@@ -1,0 +1,10 @@
+{
+  "namespace": "com.redhat.schema.avro.schemas",
+  "type": "record",
+  "name": "TestingSchemaMore",
+  "fields": [
+      {"name": "moreName", "type": "string"},
+      {"name": "moreId", "type": "double"},
+      {"name": "moreField", "type": "boolean"}
+  ]
+}

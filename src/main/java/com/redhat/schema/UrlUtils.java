@@ -7,7 +7,7 @@ public final class UrlUtils {
   private static final String CONFLUENT_COMPAT_MAP_FMT = "%s/apis/ccompat/v6";
 
   private UrlUtils() {
-    throw new IllegalAccessError("utility class needs no instantiation");
+    // a utility class needs no instantiation
   }
 
   /** Function for concatenating {@value #CONFLUENT_COMPAT_MAP_FMT} to a string url. */

@@ -4,17 +4,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.DynamicTest.dynamicTest;
 
 import java.util.stream.Stream;
-
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
-
 import io.confluent.kafka.serializers.subject.RecordNameStrategy;
 import io.confluent.kafka.serializers.subject.TopicNameStrategy;
 import io.confluent.kafka.serializers.subject.TopicRecordNameStrategy;
 
-class Naming_Strategy_Enum_Test {
+class Validate_the_naming_strategy_enum_Test {
   @TestFactory
-  Stream<DynamicTest> verify_enum_members() {
+  Stream<DynamicTest> verify_members_strategy_class_equivalents() {
     return Stream.of(
       dynamicTest(
         "the RECORD member is equivalent to the RecordNameStrategy class",
