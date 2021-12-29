@@ -79,6 +79,7 @@ public final class AvroCustomSerializer extends AbstractKafkaSchemaSerDe impleme
     avroReflectionAllowNull = config.getBoolean(KafkaAvroSerializerConfig.AVRO_REFLECTION_ALLOW_NULL_CONFIG);
   }
 
+  // TODO the schema argument should be finalized
   private byte[] serializeImpl(final String subject, AvroSchema schema)
       throws SerializationException, InvalidConfigurationException {
     requireNonNull(schemaRegistry);
@@ -102,17 +103,17 @@ public final class AvroCustomSerializer extends AbstractKafkaSchemaSerDe impleme
         restClientErrorMsg = "Error retrieving Avro schema";
         id = schemaRegistry.getId(subject, schema, normalizeSchema);
       }
-      ByteArrayOutputStream out = new ByteArrayOutputStream();
+      var out = new ByteArrayOutputStream();
       out.write(MAGIC_BYTE);
       out.write(ByteBuffer.allocate(idSize).putInt(id).array());
 
-      byte[] bytes = out.toByteArray();
+      var bytes = out.toByteArray();
       out.close();
       return bytes;
-    } catch (IOException | RuntimeException e) {
-      throw new SerializationException("Error serializing Avro message", e);
-    } catch (RestClientException e) {
-      throw toKafkaException(e, restClientErrorMsg + schema);
+    } catch (final IOException | RuntimeException exc) {
+      throw new SerializationException("Error serializing Avro message", exc);
+    } catch (final RestClientException rce) {
+      throw toKafkaException(rce, restClientErrorMsg + schema);
     }
   }
 }
