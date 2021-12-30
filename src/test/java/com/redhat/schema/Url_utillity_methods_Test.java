@@ -20,15 +20,14 @@ class Url_utillity_methods_Test {
 
   static List<Arguments> verify_the_cleanUrlEnd_func_removes_the_last_forward_slash() {
     return List.of(
-      arguments("http://no-fwd-slash-url.com", "http://no-fwd-slash-url.com"),
-      arguments("http://with-fwd-slash-url/", "http://with-fwd-slash-url")
-    );
+        arguments("http://no-fwd-slash-url.com", "http://no-fwd-slash-url.com"),
+        arguments("http://with-fwd-slash-url/", "http://with-fwd-slash-url"));
   }
 
   @Test
   void verify_the_concatConfluentMap_func_adds_confluents_api_endpoint_map() {
     assertThat(UrlUtils.concatConfluentMap.apply("http://apiurl.exampl.com"))
-      .isEqualTo("http://apiurl.exampl.com/apis/ccompat/v6");
+        .isEqualTo("http://apiurl.exampl.com/apis/ccompat/v6");
   }
 
   @ParameterizedTest
@@ -40,8 +39,7 @@ class Url_utillity_methods_Test {
 
   static List<Arguments> verify_the_isSecured_utility_method_identifies_secure_urls() {
     return List.of(
-      arguments("http://not-secured-url.example.com", false),
-      arguments("https://secured-url.example.com", true)
-    );
+        arguments("http://not-secured-url.example.com", false),
+        arguments("https://secured-url.example.com", true));
   }
 }

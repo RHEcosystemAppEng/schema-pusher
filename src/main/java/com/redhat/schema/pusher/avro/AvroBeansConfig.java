@@ -9,12 +9,16 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
 
+/**
+ * DI beans configuration class for the AVRO implementation of the schema pusher, this class should
+ * be used by the DI context to start this implementation.
+ */
 @Configuration
 @ComponentScan(basePackages = "com.redhat.schema.pusher.avro", lazyInit = true)
 public class AvroBeansConfig {
   @Bean
   @Scope(BeanDefinition.SCOPE_PROTOTYPE)
-  public KafkaProducer<String, IndexedRecord> kafkaProducer(final Properties producerProps){
+  public KafkaProducer<String, IndexedRecord> kafkaProducer(final Properties producerProps) {
     return new KafkaProducer<>(producerProps);
   }
 }

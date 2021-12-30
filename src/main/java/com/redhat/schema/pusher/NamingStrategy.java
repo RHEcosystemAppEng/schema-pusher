@@ -31,6 +31,7 @@ public enum NamingStrategy {
 
   /**
    * Get the relayed strategy class.
+   *
    * @return a Class extending
    *    {@code io.confluent.kafka.serializers.subject.strategy.SubjectNameStrategy}.
    */

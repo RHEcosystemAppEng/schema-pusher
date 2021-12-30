@@ -30,6 +30,10 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
+/**
+ * AVRO implementation of the {@link SchemaPusher}, provided the behavioural implementation for
+ * pushing schemas to the registry.
+ */
 @Component
 @Scope(BeanDefinition.SCOPE_PROTOTYPE)
 public final class AvroSchemaPusher implements SchemaPusher {
@@ -38,6 +42,14 @@ public final class AvroSchemaPusher implements SchemaPusher {
   @Autowired private ApplicationContext context;
   private final Properties producerProps;
 
+  /**
+   * Constructor the kafka bootstrap url, service registr url, and naming strategy and created the
+   * {@link Properties} instance to be used by the producer.
+   *
+   * @param kafkaBootstrapUrl the {@link String} kafka bootstrap url.
+   * @param serviceRegistryUrl the {@link String} service registry url.
+   * @param namingStrategy the {@link NamingStrategy} member.
+   */
   public AvroSchemaPusher(
       final String kafkaBootstrapUrl,
       final String serviceRegistryUrl,
@@ -69,8 +81,19 @@ public final class AvroSchemaPusher implements SchemaPusher {
       producer.flush();
     }
   }
+
+  /**
+   * Utility method for creating the set of properties to be used by the producer.
+   *
+   * @param kafkaBootstrapUrl the {@link String} kafka bootstrap url.
+   * @param serviceRegistryUrl the {@link String} service registry url.
+   * @param namingStrategy the {@link NamingStrategy} member.
+   * @return an instance of {@link Properties}.
+   */
   private Properties createProps(
-      final String kafkaBootstrapUrl, final String serviceRegistryUrl, final NamingStrategy namingStrategy) {
+      final String kafkaBootstrapUrl,
+      final String serviceRegistryUrl,
+      final NamingStrategy namingStrategy) {
     var props = new Properties();
     var registryUrl = cleanUrlEnd.andThen(concatConfluentMap).apply(serviceRegistryUrl);
     // set the kafka bootstrap and rh service registry urls
@@ -83,16 +106,21 @@ public final class AvroSchemaPusher implements SchemaPusher {
     // use custom serializer for only serializing the schema and not the object
     props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, AvroCustomSerializer.class);
     // set selected naming strategy
-    props.put(AbstractKafkaSchemaSerDeConfig.VALUE_SUBJECT_NAME_STRATEGY, namingStrategy.getStrategy());
+    props.put(
+        AbstractKafkaSchemaSerDeConfig.VALUE_SUBJECT_NAME_STRATEGY, namingStrategy.getStrategy());
     // if the bootstrap server is secured (standard for amq) set SSL as the protocol
     props.put(
-      CommonClientConfigs.SECURITY_PROTOCOL_CONFIG,
-      isSecured(kafkaBootstrapUrl) ? "SSL" : CommonClientConfigs.DEFAULT_SECURITY_PROTOCOL);
+        CommonClientConfigs.SECURITY_PROTOCOL_CONFIG,
+        isSecured(kafkaBootstrapUrl) ? "SSL" : CommonClientConfigs.DEFAULT_SECURITY_PROTOCOL);
 
     // TODO these are for development purposes - remove this
     if (Boolean.parseBoolean(System.getenv("IN_DEV_MODE"))) {
-      props.put(SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG, System.getenv("SSL_TRUSTSTORE_LOCATION_CONFIG"));
-      props.put(SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG, System.getenv("SSL_TRUSTSTORE_PASSWORD_CONFIG"));
+      props.put(
+          SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG,
+          System.getenv("SSL_TRUSTSTORE_LOCATION_CONFIG"));
+      props.put(
+          SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG,
+          System.getenv("SSL_TRUSTSTORE_PASSWORD_CONFIG"));
     }
     return props;
   }

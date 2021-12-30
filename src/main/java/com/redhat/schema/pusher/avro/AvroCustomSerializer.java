@@ -25,7 +25,8 @@ import org.apache.kafka.common.serialization.Serializer;
  * although worked, threw exceptions that needed to be hard-coded ignored. Hence, we created this
  * custom implementation and ignored no exception.
  */
-public final class AvroCustomSerializer extends AbstractKafkaSchemaSerDe implements Serializer<Object> {
+public final class AvroCustomSerializer
+    extends AbstractKafkaSchemaSerDe implements Serializer<Object> {
   private boolean isKey;
 
   private boolean normalizeSchema;
@@ -53,7 +54,9 @@ public final class AvroCustomSerializer extends AbstractKafkaSchemaSerDe impleme
   @Override
   public byte[] serialize(final String topic, final Object object) {
     requireNonNull(object);
-    var parshedSchema = AvroSchemaUtils.getSchema(object, useSchemaReflection, avroReflectionAllowNull, removeJavaProperties);
+    var parshedSchema =
+        AvroSchemaUtils.getSchema(
+            object, useSchemaReflection, avroReflectionAllowNull, removeJavaProperties);
     var schema = new AvroSchema(parshedSchema);
     var subjectName = getSubjectName(topic, isKey, object, schema);
     return serializeImpl(subjectName, schema);
@@ -71,12 +74,14 @@ public final class AvroCustomSerializer extends AbstractKafkaSchemaSerDe impleme
     configureClientProperties(config, new AvroSchemaProvider());
     normalizeSchema = config.normalizeSchema();
     autoRegisterSchema = config.autoRegisterSchema();
-    removeJavaProperties = config.getBoolean(KafkaAvroSerializerConfig.AVRO_REMOVE_JAVA_PROPS_CONFIG);
+    removeJavaProperties =
+        config.getBoolean(KafkaAvroSerializerConfig.AVRO_REMOVE_JAVA_PROPS_CONFIG);
     useSchemaId = config.useSchemaId();
     idCompatStrict = config.getIdCompatibilityStrict();
     useLatestVersion = config.useLatestVersion();
     latestCompatStrict = config.getLatestCompatibilityStrict();
-    avroReflectionAllowNull = config.getBoolean(KafkaAvroSerializerConfig.AVRO_REFLECTION_ALLOW_NULL_CONFIG);
+    avroReflectionAllowNull =
+        config.getBoolean(KafkaAvroSerializerConfig.AVRO_REFLECTION_ALLOW_NULL_CONFIG);
   }
 
   // TODO the schema argument should be finalized
@@ -92,8 +97,7 @@ public final class AvroCustomSerializer extends AbstractKafkaSchemaSerDe impleme
         id = schemaRegistry.register(subject, schema, normalizeSchema);
       } else if (useSchemaId >= 0) {
         restClientErrorMsg = "Error retrieving schema ID";
-        schema = (AvroSchema)
-            lookupSchemaBySubjectAndId(subject, useSchemaId, schema, idCompatStrict);
+        schema = (AvroSchema) lookupSchemaBySubjectAndId(subject, useSchemaId, schema, idCompatStrict);
         id = schemaRegistry.getId(subject, schema);
       } else if (useLatestVersion) {
         restClientErrorMsg = "Error retrieving latest version of Avro schema";
