@@ -1,4 +1,4 @@
-package com.redhat.schema.avro;
+package com.redhat.schema.pusher.avro;
 
 import static java.util.Objects.requireNonNull;
 

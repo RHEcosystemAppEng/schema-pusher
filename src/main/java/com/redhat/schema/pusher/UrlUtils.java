@@ -1,4 +1,4 @@
-package com.redhat.schema;
+package com.redhat.schema.pusher;
 
 import java.util.function.UnaryOperator;
 

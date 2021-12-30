@@ -1,18 +1,18 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>com.redhat</groupId>
-  <artifactId>push-schemas-to-service-registry</artifactId>
+  <groupId>com.redhat.schema.pusher</groupId>
+  <artifactId>schema-pusher</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <packaging>jar</packaging>
-  <name>Push schemas to Service Registry</name>
-  <description>Application consuming schemas from files and pushing them to Red Hat's Service Registry</description>
+  <name>Schema Pusher</name>
+  <description>Application for pushing schemas to Red Hat's Service Registry</description>
   <url>TODO</url> <!-- TODO: ADD URL -->
   <inceptionYear>2022</inceptionYear>
 
   <properties>
     <coverage.threshold>85%</coverage.threshold>
-    <main.class>com.redhat.schema.MainApp</main.class>
+    <main.class>com.redhat.schema.pusher.MainApp</main.class>
     <maven.compiler.release>17</maven.compiler.release>
     <maven.deploy.skip>true</maven.deploy.skip>
     <maven.install.skip>true</maven.install.skip>
@@ -303,7 +303,7 @@
           <configuration>
             <propertyName>jacoco.java.option</propertyName>
             <excludes>
-              <exclude>com/redhat/schema/avro/AvroCustomSerializer.class</exclude>
+              <exclude>com/redhat/schema/pusher/avro/AvroCustomSerializer.class</exclude>
             </excludes>
             <rules>
               <rule>

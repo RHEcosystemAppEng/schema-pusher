@@ -5,7 +5,7 @@
       "type": "java",
       "name": "Launch Schema Pusher CLI",
       "request": "launch",
-      "mainClass": "com.redhat.schema.MainApp",
+      "mainClass": "com.redhat.schema.pusher.MainApp",
       "projectName": "push-schemas-to-service-registry",
       "env": {
         "IN_DEV_MODE": true
@@ -17,7 +17,7 @@
         "--naming-strategy=topic_record",
         "--topic=topic1",
         "--topic=anothertopic1",
-        "--directory=${workspaceFolder}/src/test/resources/com/redhat/schema/avro/schemas/"
+        "--directory=${workspaceFolder}/src/test/resources/com/redhat/schema/pusher/avro/schemas/"
       ]
     }
   ]

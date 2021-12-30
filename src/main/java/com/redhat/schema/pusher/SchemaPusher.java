@@ -1,4 +1,4 @@
-package com.redhat.schema;
+package com.redhat.schema.pusher;
 
 import java.nio.file.Path;
 import java.util.List;

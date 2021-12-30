@@ -1,16 +1,12 @@
-package com.redhat.schema;
+package com.redhat.schema.pusher;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
-
-import picocli.CommandLine;
 import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Option;
-import picocli.CommandLine.ParameterException;
-import picocli.CommandLine.ParseResult;
 import picocli.CommandLine.Spec;
 import picocli.CommandLine.Model.CommandSpec;
 
@@ -59,21 +55,6 @@ public abstract class PushCli implements Runnable {
 
     public String getTopic() {
       return this.topic;
-    }
-  }
-
-  int executionStrategy(final ParseResult parseResult) {
-    initialize();
-    validate();
-    return new CommandLine.RunLast().execute(parseResult);
-  }
-
-  protected abstract void initialize();
-
-  protected void validate() {
-    if (getTopicAggregators().size() > 1 && !getNamingStrategy().equals(NamingStrategy.TOPIC_RECORD)) {
-      throw new ParameterException(
-        getSpec().commandLine(), "For multiple topics, please use the topic_record strategy.");
     }
   }
 

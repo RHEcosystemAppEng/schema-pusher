@@ -1,3 +1,3 @@
-# Push schemas to Service Registry
+# Schema Pusher
 
-Application consuming schemas from files and pushing them to Red Hat's Service Registry.
+Application for pushing schemas to Red Hat's Service Registry

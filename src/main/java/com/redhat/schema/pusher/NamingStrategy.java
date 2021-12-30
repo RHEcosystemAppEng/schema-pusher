@@ -1,4 +1,4 @@
-package com.redhat.schema;
+package com.redhat.schema.pusher;
 
 import io.confluent.kafka.serializers.subject.RecordNameStrategy;
 import io.confluent.kafka.serializers.subject.TopicNameStrategy;

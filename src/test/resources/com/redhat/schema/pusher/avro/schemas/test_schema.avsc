@@ -1,5 +1,5 @@
 {
-  "namespace": "com.redhat.schema.avro.schemas",
+  "namespace": "com.redhat.schema.pusher.avro.schemas",
   "type": "record",
   "name": "TestingSchema",
   "fields": [
