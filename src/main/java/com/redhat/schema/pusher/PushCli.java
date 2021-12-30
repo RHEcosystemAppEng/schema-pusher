@@ -10,6 +10,7 @@ import java.util.function.Predicate;
 import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Option;
+import picocli.CommandLine.ParameterException;
 import picocli.CommandLine.Spec;
 
 /** Command line specification and utility methods, CLI implementations should extend this class. */
@@ -88,6 +89,20 @@ public abstract class PushCli implements Runnable {
     }
   }
 
+
+  /**
+   * Use for validating the user specified arguments,
+   * i.e. multiple topic works with the topic_record strategy only, to avoid overwriting schemas.
+   */
+  protected final void validate() {
+    if (getTopicAggregators().size() > 1
+        && !getNamingStrategy().equals(NamingStrategy.TOPIC_RECORD)) {
+      throw new ParameterException(
+        spec.commandLine(),
+        "For multiple topics, please use the default topic_record strategy.");
+    }
+  }
+
   /* ************* *
    * Field Getters *
    * ************* */
@@ -134,14 +149,5 @@ public abstract class PushCli implements Runnable {
    */
   protected String getDirectory() {
     return this.directory;
-  }
-
-  /**
-   * Get the spec of the command line.
-   *
-   * @return the {@code picocli.CommandLine.Model.CommandSpec} injected instance.
-   */
-  protected CommandSpec getSpec() {
-    return this.spec;
   }
 }

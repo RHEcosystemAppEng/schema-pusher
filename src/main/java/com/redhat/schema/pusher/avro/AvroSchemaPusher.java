@@ -62,6 +62,8 @@ public final class AvroSchemaPusher implements SchemaPusher {
   public void push(final List<String> topics, final List<Path> schemas) {
     try (var producer = context.getBean(KafkaProducer.class, producerProps)) {
       topics.parallelStream().forEach(topic -> {
+        LOGGER.info(
+          () -> String.format("parallel stream for topic '%s' running on thread '%s'", topic, Thread.currentThread().getName()));
         var parser = new Parser();
         schemas.stream().forEach(path -> {
           try {
@@ -69,12 +71,14 @@ public final class AvroSchemaPusher implements SchemaPusher {
             var avroRec = new GenericData.Record(schema);
             var prodRec = new ProducerRecord<String, IndexedRecord>(topic, avroRec);
             producer.send(prodRec).get();
+            LOGGER.info(
+              () -> String.format("successfully pushed '%s' to topic '%s'", path.toFile().getName(), topic));
           } catch (final  ExecutionException | InterruptedException | IOException exc) {
             if (exc instanceof InterruptedException) {
               Thread.currentThread().interrupt();
             }
             LOGGER.log(
-              Level.SEVERE, exc, () -> String.format("failed to push schema %s to topic %s", path.toFile().getName(), topic));
+              Level.SEVERE, exc, () -> String.format("failed to push '%s' to topic '%s'", path.toFile().getName(), topic));
           }
         });
       });

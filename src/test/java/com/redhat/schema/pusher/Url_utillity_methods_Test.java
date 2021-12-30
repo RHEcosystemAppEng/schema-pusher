@@ -1,9 +1,8 @@
-package com.redhat.schema;
+package com.redhat.schema.pusher;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
-import com.redhat.schema.pusher.UrlUtils;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;

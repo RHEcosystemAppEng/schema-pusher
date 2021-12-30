@@ -1,9 +1,8 @@
-package com.redhat.schema;
+package com.redhat.schema.pusher;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.DynamicTest.dynamicTest;
 
-import com.redhat.schema.pusher.NamingStrategy;
 import io.confluent.kafka.serializers.subject.RecordNameStrategy;
 import io.confluent.kafka.serializers.subject.TopicNameStrategy;
 import io.confluent.kafka.serializers.subject.TopicRecordNameStrategy;

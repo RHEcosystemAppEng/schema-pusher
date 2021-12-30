@@ -1,11 +1,16 @@
-package com.redhat.schema;
+package com.redhat.schema.pusher;
 
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.api.Assertions.assertThatNoException;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.BDDAssertions.then;
+import static org.assertj.core.api.BDDAssertions.thenExceptionOfType;
+import static org.assertj.core.api.BDDAssertions.thenNoException;
 
-import com.redhat.schema.pusher.NamingStrategy;
-import com.redhat.schema.pusher.PushCli;
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -16,6 +21,7 @@ import org.junitpioneer.jupiter.cartesian.CartesianTest.Enum;
 import org.junitpioneer.jupiter.cartesian.CartesianTest.Values;
 import picocli.CommandLine;
 import picocli.CommandLine.MissingParameterException;
+import picocli.CommandLine.ParameterException;
 
 class Cli_options_and_utility_methods_Test {
   private static final String FAKE_BOOTSTRAP = "https://fake-kafka-bootstrap:443";
@@ -31,10 +37,6 @@ class Cli_options_and_utility_methods_Test {
     // instantiate an anonymous abstract cli as the sut
     sut =
         new PushCli() {
-          public void initialize() {
-            // not needed for this test class
-          }
-
           public void run() {
             // not needed for this test class
           }
@@ -63,13 +65,13 @@ class Cli_options_and_utility_methods_Test {
                     topicKey + "=" + FAKE_TOPIC,
                     directoryKey + "=" + FAKE_DIRECTORY));
     // and all the arguments should be aggregated
-    // then(sut.getKafkaBootstrap()).isEqualTo(FAKE_BOOTSTRAP);
-    // then(sut.getServiceRegistry()).isEqualTo(FAKE_REGISTRY);
-    // then(sut.getNamingStrategy()).isEqualByComparingTo(strategy);
-    // then(sut.getTopicAggregators()).singleElement().extracting("topic").isEqualTo(FAKE_TOPIC);
-    // then(sut.getDirectory()).isEqualTo(FAKE_DIRECTORY);
+    then(sut.getKafkaBootstrap()).isEqualTo(FAKE_BOOTSTRAP);
+    then(sut.getServiceRegistry()).isEqualTo(FAKE_REGISTRY);
+    then(sut.getNamingStrategy()).isEqualByComparingTo(strategy);
+    then(sut.getTopicAggregators()).singleElement().extracting("topic").isEqualTo(FAKE_TOPIC);
+    then(sut.getDirectory()).isEqualTo(FAKE_DIRECTORY);
     // and the validation should pass
-    // thenNoException().isThrownBy(() -> sut.validate());
+    thenNoException().isThrownBy(() -> sut.validate());
   }
 
   @ParameterizedTest
@@ -86,9 +88,9 @@ class Cli_options_and_utility_methods_Test {
         "-t=anothertopic",
         "-d=" + FAKE_DIRECTORY);
     // then an exception should be thrown as this is not an acceptable configuration
-    // thenExceptionOfType(ParameterException.class)
-    //   .isThrownBy(() -> sut.validate())
-    //   .withMessage("For multiple topics, please use the topic_record strategy.");
+    thenExceptionOfType(ParameterException.class)
+      .isThrownBy(() -> sut.validate())
+      .withMessage("For multiple topics, please use the default topic_record strategy.");
   }
 
   @Test
@@ -105,9 +107,9 @@ class Cli_options_and_utility_methods_Test {
                     "-t=" + FAKE_TOPIC,
                     "-d=" + FAKE_DIRECTORY));
     // and the validation should pass
-    // thenNoException().isThrownBy(() -> sut.validate());
+    thenNoException().isThrownBy(() -> sut.validate());
     // and the default used naming strategy should be TOPIC_RECORD
-    // then(sut.getNamingStrategy()).isEqualByComparingTo(NamingStrategy.TOPIC_RECORD);
+    then(sut.getNamingStrategy()).isEqualByComparingTo(NamingStrategy.TOPIC_RECORD);
   }
 
   @Test
@@ -147,13 +149,15 @@ class Cli_options_and_utility_methods_Test {
   @Test
   void verify_the_getPathList_utility_method_with_a_test_folder_and_a_subfolder()
       throws IOException {
+    // given the following target extensions
+    var targetExtensions = List.of("json", "avsc", "avro");
     // when loading file from the test folder (including a subfolder)
-    // var filePaths = sut.getPathList("src/test/resources/com/redhat/schema/pusher/avro/schemas");
+    var filePaths = sut.getPathList(targetExtensions, "src/test/resources/com/redhat/schema/pusher/avro/schemas");
     // then only 3 suitable files should picked up
-    // then(filePaths).hasSize(3);
+    then(filePaths).hasSize(3);
     // verify the file names
-    // var fileNames = filePaths.stream().map(Path::toFile).map(File::getName).toList();
-    // assertThat(fileNames).containsExactlyInAnyOrder(
-    //   "test_schema.avsc", "test_schema_more.avro", "test_schema_too.json");
+    var fileNames = filePaths.stream().map(Path::toFile).map(File::getName).toList();
+    assertThat(fileNames).containsExactlyInAnyOrder(
+      "test_schema.avsc", "test_schema_more.avro", "test_schema_too.json");
   }
 }
