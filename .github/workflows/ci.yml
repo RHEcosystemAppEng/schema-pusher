@@ -1,0 +1,27 @@
+---
+name: CI
+
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    name: Build and Test
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v2.4.0
+
+      - name: Setup java 17
+        uses: actions/setup-java@v2.4.0
+        with:
+          distribution: adopt-hotspot
+          java-version: 17
+          cache: maven
+
+      - name: Maven verify
+        run: mvn verify -B -ff
