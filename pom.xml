@@ -11,7 +11,7 @@
   <inceptionYear>2022</inceptionYear>
 
   <properties>
-    <coverage.threshold>85%</coverage.threshold>
+    <coverage.threshold>75%</coverage.threshold>
     <main.class>com.redhat.schema.pusher.MainApp</main.class>
     <maven.compiler.release>17</maven.compiler.release>
     <maven.deploy.skip>true</maven.deploy.skip>
