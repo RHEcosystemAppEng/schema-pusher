@@ -6,7 +6,7 @@
       "name": "Launch Schema Pusher CLI",
       "request": "launch",
       "mainClass": "com.redhat.schema.pusher.MainApp",
-      "projectName": "push-schemas-to-service-registry",
+      "projectName": "schema-pusher",
       "env": {
         "IN_DEV_MODE": true
       },

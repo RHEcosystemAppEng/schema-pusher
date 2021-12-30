@@ -5,6 +5,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.function.Predicate;
+
 import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Option;
@@ -43,6 +45,7 @@ public abstract class PushCli implements Runnable {
 
   @ArgGroup(exclusive = false, multiplicity = "1..*")
   private List<TopicAggregator> topicAggregators;
+
   /** Use for aggregating topics specified by the user. */
   protected static class TopicAggregator {
     @Option(
@@ -61,16 +64,27 @@ public abstract class PushCli implements Runnable {
    * *************** */
 
   /**
-   * Get a recursive list of files from a directory.
+   * Get a recursive list of files from a directory with filtering by file extensions.
    *
+   * @param extensions a list of extensions to filter by.
    * @param directory the directory to look in.
    * @return a {@link List} of {@link Path}.
    * @throws IOException when failed to get the directory or files.
    */
-  // TODO: added file extension based filtering
-  protected final List<Path> getPathList(final String directory) throws IOException {
+  protected final List<Path> getPathList(
+      final List<String> extensions, final String directory) throws IOException {
+    final Predicate<Path> extensionFilter =
+        p -> {
+          var file = p.toFile().getName();
+          var idx = file.lastIndexOf(".");
+          if (idx < 0) {
+            return false;
+          }
+          var ext = file.substring(idx + 1);
+          return extensions.contains(ext);
+        };
     try (var walkStream = Files.walk(Paths.get(directory))) {
-      return walkStream.filter(Files::isRegularFile).toList();
+      return walkStream.filter(Files::isRegularFile).filter(extensionFilter).toList();
     }
   }
 

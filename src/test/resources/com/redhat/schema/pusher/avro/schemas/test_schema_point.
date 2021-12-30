@@ -1,0 +1,9 @@
+{
+  "namespace": "com.redhat.schema.pusher.avro.schemas",
+  "type": "record",
+  "name": "TestingSchemaPoint",
+  "fields": [
+      {"name": "pointName", "type": "string"},
+      {"name": "pointId", "type": "double"}
+  ]
+}

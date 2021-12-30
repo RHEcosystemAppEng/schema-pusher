@@ -25,6 +25,7 @@ import picocli.CommandLine.ParameterException;
   version = "0.0.1-SNAPSHOT")
 public final class AvroPushCli extends PushCli {
   private static final Logger LOGGER = Logger.getLogger(AvroPushCli.class.getName());
+  private static final List<String> SUPPORTED_EXTENSIONS = List.of("json", "avsc", "avro");
 
   private final ApplicationContext context;
 
@@ -49,7 +50,7 @@ public final class AvroPushCli extends PushCli {
             SchemaPusher.class, getKafkaBootstrap(), getServiceRegistry(), getNamingStrategy());
     List<Path> schemas;
     try {
-      schemas = getPathList(getDirectory());
+      schemas = getPathList(SUPPORTED_EXTENSIONS, getDirectory());
     } catch (final IOException ioe) {
       LOGGER.log(
         Level.SEVERE, ioe, () -> String.format("failed to get schema files from directory: '%s'", getDirectory()));
