@@ -101,7 +101,7 @@ echo $content | base64 --decode - | tar -C $dest_dir -xz
 
 # TODO: for development - change backto /app/sche... instead of target/sche...
 # create the java command for executing the program
-java_cmd="java -jar target/schema-pusher-jar-with-dependencies.jar \
+java_cmd="java -jar target/schema-pusher-jar-with-dependencies.jar -Djava.util.logging.config.file=com/redhat/schema/pusher/logging.properties \
 --bootstrap-url=$bootstrap --registry-url=$registry --naming-strategy=$strategy --directory=$dest_dir"
 
 # iterate over the topics list and concatenate the topic to the java command

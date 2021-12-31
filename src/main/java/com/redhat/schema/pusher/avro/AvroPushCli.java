@@ -42,18 +42,22 @@ public final class AvroPushCli extends PushCli {
    */
   @Override
   public void run() {
+    LOGGER.info("starting");
     var schemaPusher =
         context.getBean(
             SchemaPusher.class, getKafkaBootstrap(), getServiceRegistry(), getNamingStrategy());
+    LOGGER.info("loading schemas");
     List<Path> schemas;
     try {
       schemas = getPathList(SUPPORTED_EXTENSIONS, getDirectory());
     } catch (final IOException ioe) {
       LOGGER.log(
-        Level.SEVERE, ioe, () -> String.format("failed to get schema files from directory: '%s'", getDirectory()));
+        Level.SEVERE, ioe, () -> String.format("failed to get schema files from directory '%s'", getDirectory()));
       return;
     }
+    LOGGER.info("loading topics");
     var topics = getTopicAggregators().stream().map(TopicAggregator::getTopic).toList();
     schemaPusher.push(topics, schemas);
+    LOGGER.info("done");
   }
 }

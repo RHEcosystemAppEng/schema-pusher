@@ -60,6 +60,7 @@ public final class AvroSchemaPusher implements SchemaPusher {
   @Override
   @SuppressWarnings("unchecked")
   public void push(final List<String> topics, final List<Path> schemas) {
+    LOGGER.info("loading producer");
     try (var producer = context.getBean(KafkaProducer.class, producerProps)) {
       topics.parallelStream().forEach(topic -> {
         LOGGER.info(

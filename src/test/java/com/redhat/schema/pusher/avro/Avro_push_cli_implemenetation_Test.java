@@ -3,15 +3,16 @@ package com.redhat.schema.pusher.avro;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
+import static org.springframework.test.util.ReflectionTestUtils.getField;
 
 import com.redhat.schema.pusher.NamingStrategy;
 import com.redhat.schema.pusher.SchemaPusher;
-
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
-
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,7 +20,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationContext;
-
 import picocli.CommandLine;
 
 @ExtendWith(MockitoExtension.class)
@@ -52,6 +52,8 @@ class Avro_push_cli_implemenetation_Test {
   @Test
   void executing_the_cli_implementation_should_invoke_the_schmea_pusher_implementation(
       @Mock final SchemaPusher mockSchemaPusher) {
+    // turn off the sut's logger to avoid polluting the build log
+    ((Logger) getField(sut, "LOGGER")).setLevel(Level.OFF);
     // given the mocked di context will return  the mock schema pusher per the arguments
     given(mockContext.getBean(
       SchemaPusher.class, FAKE_BOOTSTRAP, FAKE_REGISTRY, FAKE_NAMING_STRATEGY)).willReturn(mockSchemaPusher);
