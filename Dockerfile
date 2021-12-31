@@ -1,5 +1,8 @@
 FROM registry.access.redhat.com/ubi8/openjdk-17:1.10-5 AS build
 USER root
+RUN microdnf install gzip \
+    && microdnf update \
+    && microdnf clean all
 WORKDIR /sources
 RUN curl https://dlcdn.apache.org/maven/maven-3/3.8.4/binaries/apache-maven-3.8.4-bin.tar.gz \
     --output apache-maven-bin.tar.gz \
@@ -9,6 +12,9 @@ RUN ./apache-maven-3.8.4/bin/mvn package -Ppkg -B -ff
 
 FROM registry.access.redhat.com/ubi8/openjdk-17-runtime:1.10-6 AS runtime
 USER root
+RUN microdnf install gzip \
+    && microdnf update \
+    && microdnf clean all
 WORKDIR /app
 COPY --from=build /sources/target/schema-pusher-jar-with-dependencies.jar ./schema-pusher.jar
 COPY entrypoint.sh LICENSE ./
