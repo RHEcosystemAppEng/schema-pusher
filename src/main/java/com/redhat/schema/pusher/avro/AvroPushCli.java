@@ -1,5 +1,6 @@
 package com.redhat.schema.pusher.avro;
 
+import com.redhat.schema.pusher.ManifestVersionProvider;
 import com.redhat.schema.pusher.PushCli;
 import com.redhat.schema.pusher.SchemaPusher;
 import java.io.IOException;
@@ -20,7 +21,7 @@ import picocli.CommandLine.Command;
   name = "avro_push",
   description = "Push AVRO schemas to Red Hat's Service Registry",
   mixinStandardHelpOptions = true,
-  version = "0.0.1-SNAPSHOT")
+  versionProvider = ManifestVersionProvider.class)
 public final class AvroPushCli extends PushCli {
   private static final Logger LOGGER = Logger.getLogger(AvroPushCli.class.getName());
   private static final List<String> SUPPORTED_EXTENSIONS = List.of("json", "avsc", "avro");

@@ -6,7 +6,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.function.Predicate;
-
 import picocli.CommandLine;
 import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Model.CommandSpec;
@@ -50,7 +49,7 @@ public abstract class PushCli implements Runnable {
   private List<TopicAggregator> topicAggregators;
 
   /** Use for aggregating topics specified by the user. */
-  protected static class TopicAggregator {
+  protected static final class TopicAggregator {
     @Option(
       names = {"-t", "--topic"},
       description = "The topic to produce the message too, repeatable.",

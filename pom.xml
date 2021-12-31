@@ -468,6 +468,10 @@
                   <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
                   <mainClass>${main.class}</mainClass>
                 </manifest>
+                <manifestEntries>
+                  <PushCLI-Application-Name>${project.name}</PushCLI-Application-Name>
+                  <PushCLI-Application-Version>${project.version}</PushCLI-Application-Version>
+                </manifestEntries>
               </archive>
               <descriptorRefs>
                 <descriptorRef>jar-with-dependencies</descriptorRef>
