@@ -64,9 +64,9 @@ public final class AvroSchemaPusher implements SchemaPusher {
       topics.parallelStream().forEach(topic -> {
         LOGGER.info(
           () -> String.format("parallel stream for topic '%s' running on thread '%s'", topic, Thread.currentThread().getName()));
-        var parser = new Parser();
         schemas.stream().forEach(path -> {
           try {
+            var parser = new Parser();
             var schema = parser.parse(Files.newInputStream(path));
             var avroRec = new GenericData.Record(schema);
             var prodRec = new ProducerRecord<String, IndexedRecord>(topic, avroRec);
