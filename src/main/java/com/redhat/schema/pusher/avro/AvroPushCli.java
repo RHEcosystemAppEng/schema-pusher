@@ -42,7 +42,6 @@ public final class AvroPushCli extends PushCli {
    */
   @Override
   public void run() {
-    validate();
     var schemaPusher =
         context.getBean(
             SchemaPusher.class, getKafkaBootstrap(), getServiceRegistry(), getNamingStrategy());

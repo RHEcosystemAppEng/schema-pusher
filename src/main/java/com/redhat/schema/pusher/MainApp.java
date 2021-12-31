@@ -16,6 +16,7 @@ public final class MainApp {
     try (var context = new AnnotationConfigApplicationContext(AvroBeansConfig.class)) {
       var cliImpl = context.getBean(PushCli.class);
       var cli = new CommandLine(cliImpl);
+      cli.setExecutionStrategy(cliImpl::executionStrategy);
       cli.setCaseInsensitiveEnumValuesAllowed(true);
       cli.execute(args);
     }

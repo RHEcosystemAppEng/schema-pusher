@@ -7,10 +7,12 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.function.Predicate;
 
+import picocli.CommandLine;
 import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.ParameterException;
+import picocli.CommandLine.ParseResult;
 import picocli.CommandLine.Spec;
 
 /** Command line specification and utility methods, CLI implementations should extend this class. */
@@ -89,12 +91,22 @@ public abstract class PushCli implements Runnable {
     }
   }
 
+  /**
+   * Use as custom execution strategy for validating.
+   *
+   * @param parseResult the parsed arguments injected by the cli.
+   * @return an exit code.
+   */
+  final int executionStrategy(final ParseResult parseResult) {
+    validate();
+    return new CommandLine.RunLast().execute(parseResult);
+  }
 
   /**
    * Use for validating the user specified arguments,
    * i.e. multiple topic works with the topic_record strategy only, to avoid overwriting schemas.
    */
-  protected final void validate() {
+  protected void validate() {
     if (getTopicAggregators().size() > 1
         && !getNamingStrategy().equals(NamingStrategy.TOPIC_RECORD)) {
       throw new ParameterException(
