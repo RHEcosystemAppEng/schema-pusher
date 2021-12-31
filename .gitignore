@@ -31,3 +31,4 @@ target
 *truststore.jks
 *.env
 test-registry-rest-api.http
+.notes
