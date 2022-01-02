@@ -4,7 +4,9 @@ RUN microdnf install gzip \
     && microdnf update \
     && microdnf clean all
 WORKDIR /app
-COPY target/schema-pusher-jar-with-dependencies.jar entrypoint.sh LICENSE ./
+COPY schema-pusher/target/schema-pusher-jar-with-dependencies.jar \
+    schema-pusher/entrypoint.sh \
+    schema-pusher/LICENSE ./
 RUN chmod a+x entrypoint.sh && \
     chown -R 1001:0 .
 USER 1001
