@@ -12,6 +12,8 @@
 
   <properties>
     <coverage.threshold>70%</coverage.threshold>
+    <image.namespace>tomerfi</image.namespace>
+    <image.registry>quay.io</image.registry>
     <main.class>com.redhat.schema.pusher.MainApp</main.class>
     <maven.compiler.release>17</maven.compiler.release>
     <maven.deploy.skip>true</maven.deploy.skip>
@@ -37,6 +39,7 @@
     <maven-enforcer-plugin.version>3.0.0</maven-enforcer-plugin.version>
     <maven-jar-plugin.version>3.2.0</maven-jar-plugin.version>
     <maven-resources-plugin.version>3.2.0</maven-resources-plugin.version>
+    <git-commit-id-maven-plugin.version>5.0.0</git-commit-id-maven-plugin.version>
     <jacoco-maven-plugin.version>0.8.7</jacoco-maven-plugin.version>
     <junit-platform-maven-plugin.version>1.1.5</junit-platform-maven-plugin.version>
     <!-- Dependency Convergence -->
@@ -63,7 +66,7 @@
     <developer>
       <id>tfigenbl</id>
       <name>Tomer Figenblat</name>
-      <organization>Red Hat</organization>
+      <organization>Red Hat, Inc.</organization>
     </developer>
   </developers>
 
@@ -313,9 +316,38 @@
           <version>${junit-platform-maven-plugin.version}</version>
         </plugin>
         <plugin>
+          <groupId>io.github.git-commit-id</groupId>
+          <artifactId>git-commit-id-maven-plugin</artifactId>
+          <version>${git-commit-id-maven-plugin.version}</version>
+          <configuration>
+            <includeOnlyProperties>
+                <includeOnlyProperty>^git.build.(time|version)$</includeOnlyProperty>
+                <includeOnlyProperty>^git.commit.id.full$</includeOnlyProperty>
+                <includeOnlyProperty>^git.closest.tag.name$</includeOnlyProperty>
+            </includeOnlyProperties>
+            <commitIdGenerationMode>full</commitIdGenerationMode>
+          </configuration>
+        </plugin>
+        <plugin>
           <groupId>org.eclipse.jkube</groupId>
           <artifactId>kubernetes-maven-plugin</artifactId>
           <version>${jkube.version}</version>
+          <configuration>
+            <images>
+              <image>
+                <name>${image.registry}/${image.namespace}/%a:%v</name>
+                <build>
+                  <contextDir>${project.basedir}</contextDir>
+                  <dockerFile>${project.basedir}/src/main/docker/Dockerfile</dockerFile>
+                  <assembly>
+                    <name>${project.artifactId}</name>
+                  </assembly>
+                  <filter>@</filter>
+                  <tags>latest</tags>
+                </build>
+              </image>
+            </images>
+          </configuration>
         </plugin>
         <plugin>
           <groupId>org.jacoco</groupId>
@@ -350,6 +382,18 @@
             <goals>
               <goal>prepare-agent</goal>
               <goal>check</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>io.github.git-commit-id</groupId>
+        <artifactId>git-commit-id-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <goals>
+              <goal>revision</goal>
             </goals>
           </execution>
         </executions>
@@ -407,6 +451,36 @@
         </configuration>
       </plugin>
 
+      <plugin>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>single</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <finalName>schema-pusher</finalName>
+          <archive>
+            <addMavenDescriptor>false</addMavenDescriptor>
+            <manifest>
+              <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+              <mainClass>${main.class}</mainClass>
+            </manifest>
+            <manifestEntries>
+              <PushCLI-Application-Name>${project.name}</PushCLI-Application-Name>
+              <PushCLI-Application-Version>${project.version}</PushCLI-Application-Version>
+            </manifestEntries>
+          </archive>
+          <descriptorRefs>
+            <descriptorRef>jar-with-dependencies</descriptorRef>
+          </descriptorRefs>
+        </configuration>
+      </plugin>
+
+
     </plugins>
   </build>
 
@@ -446,78 +520,6 @@
                 </goals>
               </execution>
             </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-
-    <!-- Use this profile to create a schema-pusher-jar-with-dependencies.jar archive. -->
-    <profile>
-      <id>pkg</id>
-      <activation>
-        <activeByDefault>true</activeByDefault>
-      </activation>
-      <build>
-        <plugins>
-          <plugin>
-            <artifactId>maven-assembly-plugin</artifactId>
-            <executions>
-              <execution>
-                <phase>package</phase>
-                <goals>
-                  <goal>single</goal>
-                </goals>
-              </execution>
-            </executions>
-            <configuration>
-              <finalName>schema-pusher</finalName>
-              <archive>
-                <addMavenDescriptor>false</addMavenDescriptor>
-                <manifest>
-                  <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
-                  <mainClass>${main.class}</mainClass>
-                </manifest>
-                <manifestEntries>
-                  <PushCLI-Application-Name>${project.name}</PushCLI-Application-Name>
-                  <PushCLI-Application-Version>${project.version}</PushCLI-Application-Version>
-                </manifestEntries>
-              </archive>
-              <descriptorRefs>
-                <descriptorRef>jar-with-dependencies</descriptorRef>
-              </descriptorRefs>
-            </configuration>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-
-    <profile>
-      <id>img</id>
-      <activation>
-        <activeByDefault>true</activeByDefault>
-      </activation>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.eclipse.jkube</groupId>
-            <artifactId>kubernetes-maven-plugin</artifactId>
-            <configuration>
-              <images>
-                <image>
-                  <name>quay.io/tomerfi/%a:%v</name>
-                  <build>
-                    <args>
-                      <VERSION>${project.version}</VERSION>
-                    </args>
-                    <contextDir>${project.basedir}</contextDir>
-                    <dockerFile>${project.basedir}/src/main/docker/Dockerfile</dockerFile>
-                    <assembly>
-                      <name>schema-pusher</name>
-                    </assembly>
-                  </build>
-                </image>
-              </images>
-            </configuration>
           </plugin>
         </plugins>
       </build>
