@@ -43,6 +43,7 @@ public final class AvroPushCli extends PushCli {
    */
   @Override
   public void run() {
+    validate();
     LOGGER.info("starting");
     var schemaPusher =
         context.getBean(

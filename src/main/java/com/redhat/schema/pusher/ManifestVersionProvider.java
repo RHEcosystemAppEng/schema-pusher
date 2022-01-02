@@ -1,35 +1,36 @@
 package com.redhat.schema.pusher;
 
-import java.io.IOException;
+import static java.util.Objects.nonNull;
+
 import java.util.jar.Manifest;
 import picocli.CommandLine.IVersionProvider;
 
 /**
  * Helper class implementing {@code picocli.CommandLine.IVersionProvider} providing versioning via
  * manifest entries.
- * Use {@value #APP_NAME_KEY} and {@value #APP_VERSION_KEY}.
+ * Use {@value #APP_NAME_KEY} and {@value #APP_VERSION_KEY} in your manifest.
  */
 public final class ManifestVersionProvider implements IVersionProvider {
   private static final String APP_NAME_KEY = "PushCLI-Application-Name";
   private static final String APP_VERSION_KEY = "PushCLI-Application-Version";
-  private static final String DEFAULT_VERSION = "Default Name - 0.0.0";
+  private static final String DEFAULT_VERSION = "Default Name 0.0.0";
 
   @Override
   public String[] getVersion() throws Exception {
-    var resources = getClass().getClassLoader().getResources("META-INF/MANIFEST.MF");
-      while (resources.hasMoreElements()) {
-          var url = resources.nextElement();
-          try {
-              var manifest = new Manifest(url.openStream());
-              var attributes = manifest.getMainAttributes();
-              if (attributes.containsKey(APP_NAME_KEY) && attributes.containsKey(APP_VERSION_KEY)) {
-                return new String[] {
-                  String.format("%s - %s", attributes.getValue(APP_NAME_KEY), attributes.getValue(APP_VERSION_KEY)) };
-              }
-          } catch (final IOException ioe) {
-              return new String[] { DEFAULT_VERSION };
-          }
+    var manifests = getClass().getClassLoader().getResources("META-INF/MANIFEST.MF");
+    while (manifests.hasMoreElements()) {
+      var url = manifests.nextElement();
+      if (!url.toString().contains("schema-pusher")) {
+        continue;
       }
-      return new String[] { DEFAULT_VERSION };
+      var manifest = new Manifest(url.openStream());
+      var attributes = manifest.getMainAttributes();
+      var appName = attributes.getValue(APP_NAME_KEY);
+      var appVersion = attributes.getValue(APP_VERSION_KEY);
+      if (nonNull(appName) && nonNull(appVersion)) {
+        return new String[] { String.format("%s %s", appName, appVersion) };
+      }
+    }
+    return new String[] { DEFAULT_VERSION };
   }
 }
