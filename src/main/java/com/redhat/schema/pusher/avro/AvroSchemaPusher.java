@@ -22,7 +22,6 @@ import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
-import org.apache.kafka.common.config.SslConfigs;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -118,15 +117,6 @@ public final class AvroSchemaPusher implements SchemaPusher {
         CommonClientConfigs.SECURITY_PROTOCOL_CONFIG,
         isSecured(kafkaBootstrapUrl) ? "SSL" : CommonClientConfigs.DEFAULT_SECURITY_PROTOCOL);
 
-    // TODO these are for development purposes - remove this
-    if (Boolean.parseBoolean(System.getenv("IN_DEV_MODE"))) {
-      props.put(
-          SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG,
-          System.getenv("SSL_TRUSTSTORE_LOCATION_CONFIG"));
-      props.put(
-          SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG,
-          System.getenv("SSL_TRUSTSTORE_PASSWORD_CONFIG"));
-    }
     return props;
   }
 }

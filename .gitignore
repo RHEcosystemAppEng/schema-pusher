@@ -27,7 +27,6 @@ target
 *.cache
 
 # Project specific
-*sample_schemas*
 *truststore.jks
 *.env
 test-registry-rest-api.http

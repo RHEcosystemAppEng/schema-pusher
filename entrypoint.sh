@@ -1,11 +1,5 @@
 #!/bin/bash
 
-# TODO: this if for development - remove this when done
-export IN_DEV_MODE=true
-if [ "$IN_DEV_MODE" = "true" ]; then
-  export $(cat .env | xargs)
-fi
-
 # supported subject naming strategies
 declare -a naming_strategies=("topic", "record", "topic_record")
 
@@ -91,17 +85,15 @@ if [ "${#topics[@]}" -gt 1 ] && [[ "$strategy" != "topic_record" ]]; then
   exit 1
 fi
 
-# TODO: for development - change back to /app/schema
 # destination directory for loading schemas
-dest_dir=ttt #/app/schemas
+dest_dir=tmp_schemas
 mkdir $dest_dir
 
 # decode the the tar.gz archive and extract it's content
 echo $content | base64 --decode - | tar -C $dest_dir -xz
 
-# TODO: for development - change backto /app/sche... instead of target/sche...
 # create the java command for executing the program
-java_cmd="java -jar target/schema-pusher-jar-with-dependencies.jar -Djava.util.logging.config.file=com/redhat/schema/pusher/logging.properties \
+java_cmd="java -jar /app/schema-pusher-jar-with-dependencies.jar \
 --bootstrap-url=$bootstrap --registry-url=$registry --naming-strategy=$strategy --directory=$dest_dir"
 
 # iterate over the topics list and concatenate the topic to the java command

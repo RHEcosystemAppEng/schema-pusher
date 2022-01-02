@@ -448,6 +448,9 @@
     <!-- Use this profile to create a schema-pusher-jar-with-dependencies.jar archive. -->
     <profile>
       <id>pkg</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
       <build>
         <plugins>
           <plugin>
