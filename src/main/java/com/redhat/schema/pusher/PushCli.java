@@ -6,12 +6,10 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.function.Predicate;
-import picocli.CommandLine;
 import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.ParameterException;
-import picocli.CommandLine.ParseResult;
 import picocli.CommandLine.Spec;
 
 /** Command line specification and utility methods, CLI implementations should extend this class. */
@@ -88,17 +86,6 @@ public abstract class PushCli implements Runnable {
     try (var walkStream = Files.walk(Paths.get(directory))) {
       return walkStream.filter(Files::isRegularFile).filter(extensionFilter).toList();
     }
-  }
-
-  /**
-   * Use as custom execution strategy for validating.
-   *
-   * @param parseResult the parsed arguments injected by the cli.
-   * @return an exit code.
-   */
-  final int executionStrategy(final ParseResult parseResult) {
-    validate();
-    return new CommandLine.RunLast().execute(parseResult);
   }
 
   /**
