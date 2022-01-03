@@ -31,7 +31,7 @@ public final class MainApp {
       var cliImpl = context.getBean(PushCli.class);
       var cli = new CommandLine(cliImpl);
       cli.setCaseInsensitiveEnumValuesAllowed(true);
-      cli.execute(args);
+      System.exit(cli.execute(args));
     }
   }
 }

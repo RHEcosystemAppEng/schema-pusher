@@ -37,8 +37,9 @@ class Cli_options_and_utility_methods_Test {
     // instantiate an anonymous abstract cli as the sut
     sut =
         new PushCli() {
-          public void run() {
+          public Integer call() {
             // not needed for this test class
+            return 0;
           }
         };
     // load the instance as a command line

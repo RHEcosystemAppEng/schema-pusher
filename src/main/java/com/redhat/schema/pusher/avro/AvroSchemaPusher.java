@@ -5,6 +5,7 @@ import static com.redhat.schema.pusher.UrlUtils.concatConfluentMap;
 import static com.redhat.schema.pusher.UrlUtils.isSecured;
 
 import com.redhat.schema.pusher.NamingStrategy;
+import com.redhat.schema.pusher.ReturnCode;
 import com.redhat.schema.pusher.SchemaPusher;
 import io.confluent.kafka.serializers.AbstractKafkaSchemaSerDeConfig;
 import java.io.IOException;
@@ -58,7 +59,7 @@ public final class AvroSchemaPusher implements SchemaPusher {
 
   @Override
   @SuppressWarnings("unchecked")
-  public void push(final List<String> topics, final List<Path> schemas) {
+  public ReturnCode push(final List<String> topics, final List<Path> schemas) {
     LOGGER.info("loading producer");
     try (var producer = context.getBean(KafkaProducer.class, producerProps)) {
       topics.parallelStream().forEach(topic -> {
@@ -83,6 +84,10 @@ public final class AvroSchemaPusher implements SchemaPusher {
         });
       });
       producer.flush();
+      return ReturnCode.SUCCESS;
+    } catch (final Exception exc) {
+      LOGGER.log(Level.SEVERE, exc, () -> "producing messages to failed");
+      return ReturnCode.PRODUCER_ERROR;
     }
   }
 

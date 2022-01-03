@@ -103,7 +103,10 @@ do
 done
 
 # execute the java command
-eval $java_cmd
+ret_code=eval $java_cmd
 
 # clean up the destination directory
 rm -r $dest_dir
+
+# exit with the java app's return code
+exit $ret_code

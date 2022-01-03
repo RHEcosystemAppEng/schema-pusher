@@ -10,6 +10,7 @@ public interface SchemaPusher {
    *
    * @param topics a {@link List} of {@link String} topic to push the schemas with.
    * @param schemas a {@link List} of {@link Path} of schema files to push.
+   * @return an integer return code
    */
-  void push(List<String> topics, List<Path> schemas);
+  ReturnCode push(List<String> topics, List<Path> schemas);
 }

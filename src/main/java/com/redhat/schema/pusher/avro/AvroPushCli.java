@@ -1,5 +1,7 @@
 package com.redhat.schema.pusher.avro;
 
+import static com.redhat.schema.pusher.ReturnCode.DIRECTORY_ERROR;
+
 import com.redhat.schema.pusher.ManifestVersionProvider;
 import com.redhat.schema.pusher.PushCli;
 import com.redhat.schema.pusher.SchemaPusher;
@@ -42,7 +44,7 @@ public final class AvroPushCli extends PushCli {
    * user's specified schema files and topic list.
    */
   @Override
-  public void run() {
+  public Integer call() {
     validate();
     LOGGER.info("starting");
     var schemaPusher =
@@ -55,11 +57,12 @@ public final class AvroPushCli extends PushCli {
     } catch (final IOException ioe) {
       LOGGER.log(
         Level.SEVERE, ioe, () -> String.format("failed to get schema files from directory '%s'", getDirectory()));
-      return;
+      return DIRECTORY_ERROR.code();
     }
     LOGGER.info("loading topics");
     var topics = getTopicAggregators().stream().map(TopicAggregator::getTopic).toList();
-    schemaPusher.push(topics, schemas);
+    var retCode = schemaPusher.push(topics, schemas);
     LOGGER.info("done");
+    return retCode.code();
   }
 }

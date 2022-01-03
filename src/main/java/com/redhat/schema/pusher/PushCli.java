@@ -5,6 +5,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.function.Predicate;
 import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Model.CommandSpec;
@@ -13,7 +14,7 @@ import picocli.CommandLine.ParameterException;
 import picocli.CommandLine.Spec;
 
 /** Command line specification and utility methods, CLI implementations should extend this class. */
-public abstract class PushCli implements Runnable {
+public abstract class PushCli implements Callable<Integer> {
   @Spec private CommandSpec spec;
 
   /* ******************** *
