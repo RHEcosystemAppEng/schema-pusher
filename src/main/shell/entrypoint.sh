@@ -26,11 +26,11 @@ show_usage() {
   echo "This should result in extracting the tar.gz archive decoded from the content parameter's value,"
   echo "the extracted schema files will be pushed to kafka/registry instance using the specified subject"
   echo "naming strategy."
-  echo "Each schema file will be pushed with all the specified topics, for the example above, if the"
+  echo "Each schema file will be pushed to all the specified topics, for the example above, if the"
   echo "archive contains 2 schema files, then 6 schemas will be pushed, one per each topic specified."
   echo ""
   echo "Please note, multiple topics are only supported with the 'topic_record' naming strategy, the"
-  echo "other strategies ('topic' and 'record') will overwrite eachother."
+  echo "other strategies ('topic' and 'record') will result in messages overwriting eachother."
   echo ""
 }
 
