@@ -1,0 +1,2 @@
+PushCLI-Application-Name: Fake Application Name
+PushCLI-Application-Version: 1.2.3-FAKE

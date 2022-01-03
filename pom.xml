@@ -11,7 +11,7 @@
   <inceptionYear>2022</inceptionYear>
 
   <properties>
-    <coverage.threshold>70%</coverage.threshold>
+    <coverage.threshold>75%</coverage.threshold>
     <image.namespace>tomerfi</image.namespace>
     <image.registry>quay.io</image.registry>
     <main.class>com.redhat.schema.pusher.MainApp</main.class>
