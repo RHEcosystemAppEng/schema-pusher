@@ -7,12 +7,12 @@
   <packaging>jar</packaging>
   <name>Schema Pusher</name>
   <description>Application for pushing schemas to Red Hat's Service Registry</description>
-  <url>TODO</url> <!-- TODO: ADD URL -->
+  <url>https://github.com/RHEcosystemAppEng/schema-pusher</url>
   <inceptionYear>2022</inceptionYear>
 
   <properties>
     <coverage.threshold>75%</coverage.threshold>
-    <image.namespace>tomerfi</image.namespace>
+    <image.namespace>ecosystem-appeng</image.namespace>
     <image.registry>quay.io</image.registry>
     <main.class>com.redhat.schema.pusher.MainApp</main.class>
     <maven.compiler.release>17</maven.compiler.release>
@@ -42,6 +42,7 @@
     <git-commit-id-maven-plugin.version>5.0.0</git-commit-id-maven-plugin.version>
     <jacoco-maven-plugin.version>0.8.7</jacoco-maven-plugin.version>
     <junit-platform-maven-plugin.version>1.1.5</junit-platform-maven-plugin.version>
+    <versions-maven-plugin.version>2.8.1</versions-maven-plugin.version>
     <!-- Dependency Convergence -->
     <apiguardian.version>1.1.2</apiguardian.version>
     <commons-cli.version>1.5.0</commons-cli.version>
@@ -327,6 +328,11 @@
             </includeOnlyProperties>
             <commitIdGenerationMode>full</commitIdGenerationMode>
           </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>versions-maven-plugin</artifactId>
+          <version>${versions-maven-plugin.version}</version>
         </plugin>
         <plugin>
           <groupId>org.eclipse.jkube</groupId>

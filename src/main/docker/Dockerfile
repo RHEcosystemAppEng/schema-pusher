@@ -14,9 +14,9 @@ ENTRYPOINT ["/app/entrypoint.sh"]
 
 LABEL org.opencontainers.image.created="@git.build.time@" \
 org.opencontainers.image.authors="Ecosystem Engineering Team, Red Hat" \
-org.opencontainers.image.url="TODO add image url" \
-org.opencontainers.image.source="TODO add source url" \
-org.opencontainers.image.documentation="TODO add docs url" \
+org.opencontainers.image.url="https://quay.io/repository/ecosystem-appeng/schema-pusher" \
+org.opencontainers.image.source="https://github.com/RHEcosystemAppEng/schema-pusher.git" \
+org.opencontainers.image.documentation="https://github.com/RHEcosystemAppEng/schema-pusher" \
 org.opencontainers.image.version="@git.build.version@" \
 org.opencontainers.image.revision="@git.commit.id.full@" \
 org.opencontainers.image.ref.name="@git.closest.tag.name@" \
