@@ -163,7 +163,7 @@ This application is constructed of three layers:
 - Set the desired release version, add, commit, and tag it:
 
   ```shell
-  mvn versions:set -DnewVersion 1.2.3
+  mvn versions:set -DnewVersion=1.2.3
   git add pom.xml
   git commit -m "build: set release version to 1.2.3 [skip ci]"
   git tag -m "new version title" 1.2.3
