@@ -12,8 +12,8 @@
       },
       "envFile": "${workspaceFolder}/.env",
       "args": [
-        "--bootstrap-url=https://<kafka-bootstrap-url-goes-here>:443",
-        "--registry-url=http://<service-registry-url-goes-here>",
+        "--bootstrap-url=https://<kafka-bootstrap-route-url-goes-here>:443",
+        "--registry-url=http://<service-registry-route-url-goes-here>",
         "--naming-strategy=topic_record",
         "--topic=topic1",
         "--topic=anothertopic1",

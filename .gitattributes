@@ -78,7 +78,7 @@ Dockerfile* text eol=lf
 *.html text eol=lf diff=html
 *.ini text eol=crlf
 *.js text eol=lf
-*.json text eol=lf filter=reductScript
+*.json text eol=lf
 *.jsp text eol=lf
 *.jspf text eol=lf
 *.jspx text eol=lf
