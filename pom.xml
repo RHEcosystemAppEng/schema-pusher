@@ -26,7 +26,7 @@
     <jkube.version>1.5.1</jkube.version>
     <junit-jupiter.version>5.8.2</junit-jupiter.version>
     <junit-pioneer.version>1.5.0</junit-pioneer.version>
-    <kafka.version>3.0.0</kafka.version>
+    <kafka.version>7.0.1-ce</kafka.version>
     <kafka-avro-serializer.version>7.0.1</kafka-avro-serializer.version>
     <mockito.version>4.2.0</mockito.version>
     <picocli.version>4.6.2</picocli.version>
