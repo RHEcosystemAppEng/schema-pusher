@@ -24,4 +24,4 @@ jobs:
           cache: maven
 
       - name: Maven verify
-        run: mvn verify -B -ff
+        run: mvn verify k8s:build -B -ff
