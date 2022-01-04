@@ -20,7 +20,7 @@
     <maven.install.skip>true</maven.install.skip>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <!-- Dependencies -->
-    <assertj.version>3.21.0</assertj.version>
+    <assertj.version>3.22.0</assertj.version>
     <auto-service.version>1.0.1</auto-service.version>
     <extra-enforcer-rules.version>1.5.1</extra-enforcer-rules.version>
     <jkube.version>1.5.1</jkube.version>
@@ -28,7 +28,7 @@
     <junit-pioneer.version>1.5.0</junit-pioneer.version>
     <kafka.version>3.0.0</kafka.version>
     <kafka-avro-serializer.version>7.0.1</kafka-avro-serializer.version>
-    <mockito.version>4.1.0</mockito.version>
+    <mockito.version>4.2.0</mockito.version>
     <picocli.version>4.6.2</picocli.version>
     <slf4j.version>1.7.32</slf4j.version>
     <springframework.version>5.3.14</springframework.version>
@@ -52,7 +52,7 @@
     <junit-platform.version>1.8.2</junit-platform.version>
     <osgi.version>6.0.0</osgi.version>
     <scala.version>2.13.7</scala.version>
-    <snappy-java.version>1.1.8</snappy-java.version>
+    <snappy-java.version>1.1.8.4</snappy-java.version>
   </properties>
 
   <licenses>
