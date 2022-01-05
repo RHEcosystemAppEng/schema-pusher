@@ -99,7 +99,7 @@ java -jar target/schema-pusher-jar-with-dependencies.jar \
 -d src/test/resources/com/redhat/schema/pusher/avro/schemas/
 ```
 
-> Note the for the java app, the *topic_record* strategy is the default one used if none specified.
+> Note that for the java app, the *topic_record* strategy is the default one used if none is specified.
 
 For help:
 
