@@ -1,0 +1,30 @@
+---
+name: Release
+
+on:
+  push:
+    tags:
+      - "[0-9]+.[0-9]+.[0-9]+"
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    name: Release to GitHub
+    steps:
+    - name: Create a release
+      uses: actions/github-script@v5.0.0
+      with:
+        script: |
+          const repo_name = context.payload.repository.full_name
+          const tag = context.ref.substr('refs/tags/'.length)
+          const ref_info = await github.request('GET /repos/' + repo_name + '/git/ref/tags/' + tag)
+          const tag_sha = ref_info.data.object.sha
+          const tag_info = await github.request('GET /repos/' + repo_name + '/git/tags/' + tag_sha)
+          const tag_message = tag_info.data.message
+          const is_verified = tag_info.data.verification.verified
+          const release_name = is_verified ? tag_message.replace(tag_info.data.verification.signature, '') : tag_message
+          await github.request('POST /repos/' + repo_name + '/releases', {
+            tag_name: tag,
+            name: release_name,
+            generate_release_notes: true
+          })

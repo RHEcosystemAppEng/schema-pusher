@@ -1,5 +1,5 @@
 ---
-name: CI
+name: Build
 
 on:
   workflow_dispatch:
@@ -9,7 +9,7 @@ on:
       - main
 
 jobs:
-  ci:
+  build:
     runs-on: ubuntu-latest
     name: Build and Test
     steps:

@@ -157,6 +157,13 @@ This application is constructed of three layers:
 | `mvn k8s:build`         | builds the docker image.                  |
 | `mvn help:all-profiles` | will display the existing profiles.       |
 
+### CI
+
+| Workflow                         | Trigger                                            | Description                                       |
+| -------------------------------- | -------------------------------------------------- | ------------------------------------------------- |
+| [Build](workflows/build.yml)     | manually - pull requests - push to the main branch | will build the project including the docker image |
+| [Release](workflows/release.yml) | push semver tags to the main branch                | will create a release for the triggering tag      |
+
 ### Release process
 
 - Decide the desired version, i.e. 1.2.3.
@@ -165,7 +172,7 @@ This application is constructed of three layers:
   ```shell
   mvn versions:set -DnewVersion=1.2.3
   git add pom.xml
-  git commit -m "build: set release version to 1.2.3 [skip ci]"
+  git commit -m "build: set release version to 1.2.3"
   git tag -m "new version title" 1.2.3
   ```
 
@@ -180,6 +187,9 @@ This application is constructed of three layers:
   ```shell
   mvn versions:set -DnextSnapshot
   git add pom.xml
-  git commit -m "build: set a new snapshot version"
+  git commit -m "build: set a new snapshot version [skip ci]"
   git push --follow-tags
   ```
+
+The pushed tag will trigger the [release.yml workflow](workflows/release.yml) and automatically create a
+*GitHub Release* for the *1.2.3* tag with the title *new version title*.
