@@ -48,8 +48,8 @@ prints:
 Script for decoding and extracting base64 tar.gz archive containing schema files.
 The schema files will be then pushed to Red Hat's service registry via the attached Java app.
 ---------------------------------------------------------------------------------------------
-/app/entrypoint.sh Usage: -h/--help
-/app/entrypoint.sh Usage: [options]
+Usage: -h/--help
+Usage: [options]
 
 Options:
 --bootstrap, kafka bootstrap url.
@@ -59,7 +59,7 @@ Options:
 --content, base64 encoded 'tar.gz' archive containing the schema files.
 
 Example:
-/app/entrypoint.sh --bootstrap https://kafka-bootstrap-url:443 --registry http://service-registry-url:8080 \
+--bootstrap https://kafka-bootstrap-url:443 --registry http://service-registry-url:8080 \
 --strategy topic_record --topic sometopic --topic anothertopic --topic onemoretopic \
 --content $(base64 -w 0 schema_files.tar.gz)
 
