@@ -165,9 +165,7 @@ This application is constructed of three layers:
     is the implementation in charge of pushing schema messages via the producer.
   - [com/redhat/schema/pusher/MainApp.java][59] is
     the main application starting point, instantiating the di context and loading the command line.
-  - [com/redhat/schema/pusher/MainApp.java][60] is
-    the starting point of the application.
-- A [Shell Script][54] is in charge of decoding the archive, extracting it, and invoking
+- A [Shell script][54] is in charge of decoding the archive, extracting it, and invoking
   the *Java* application with the extracted content.
 - A [Dockerfile][61] instruction set in charge of containerizing the *Shell* script and the *Java* application.
 
@@ -219,7 +217,7 @@ This application is constructed of three layers:
   ```
 
 The pushed tag will trigger the [release.yml workflow][63],</br>
-and automatically create a *GitHub Release* for the *1.2.3* tag with the title *new version title*.
+this will automatically create a *GitHub Release* for the *1.2.3* tag with the title *new version title*.
 
 ## Useful links
 
