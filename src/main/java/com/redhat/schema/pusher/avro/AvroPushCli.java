@@ -20,8 +20,7 @@ import picocli.CommandLine.Command;
  */
 @Component
 @Command(
-  name = "avro_push",
-  description = "Push AVRO schemas to Red Hat's Service Registry",
+  description = "Push schemas to Red Hat's Service Registry",
   mixinStandardHelpOptions = true,
   versionProvider = ManifestVersionProvider.class)
 public final class AvroPushCli extends PushCli {

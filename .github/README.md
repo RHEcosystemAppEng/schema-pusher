@@ -128,9 +128,9 @@ java -jar target/schema-pusher-jar-with-dependencies.jar --help
 prints:
 
 ```text
-Usage: avro_push [-hV] -b=<kafkaBootstrap> -d=<directory> [-n=<namingStrategy>]
+Usage: <main class> [-hV] -b=<kafkaBootstrap> -d=<directory> [-n=<namingStrategy>]
                  -r=<serviceRegistry> (-t=<topic>)...
-Push AVRO schemas to Red Hat's Service Registry
+Push schemas to Red Hat's Service Registry
   -b, --bootstrap-url=<kafkaBootstrap>
                         The url for Kafka's bootstrap server.
   -d, --directory=<directory>
