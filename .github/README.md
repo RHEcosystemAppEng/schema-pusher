@@ -2,7 +2,7 @@
 
 <!-- markdownlint-disable -->
 <a href="https://quay.io/repository/ecosystem-appeng/schema-pusher">
-    <img src="https://raw.githubusercontent.com/RHEcosystemAppEng/schema_pusher/main/images/docker_run_flow.png" width="800" height="350" alt="">
+    <img src="https://raw.githubusercontent.com/RHEcosystemAppEng/schema-pusher/main/images/docker_run_flow.png" width="700" height="300" alt="">
 </a>
 <!-- markdownlint-restore -->
 
