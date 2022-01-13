@@ -3,8 +3,9 @@ package com.redhat.schema.pusher.avro;
 import static com.redhat.schema.pusher.UrlUtils.cleanUrlEnd;
 import static com.redhat.schema.pusher.UrlUtils.concatConfluentMap;
 import static com.redhat.schema.pusher.UrlUtils.isSecured;
+import static java.util.Objects.nonNull;
 
-import com.redhat.schema.pusher.NamingStrategy;
+import com.redhat.schema.pusher.PushCli;
 import com.redhat.schema.pusher.ReturnCode;
 import com.redhat.schema.pusher.SchemaPusher;
 import io.confluent.kafka.serializers.AbstractKafkaSchemaSerDeConfig;
@@ -23,6 +24,7 @@ import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.common.config.SslConfigs;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -43,18 +45,13 @@ public final class AvroSchemaPusher implements SchemaPusher {
   private final Properties producerProps;
 
   /**
-   * Constructor the kafka bootstrap url, service registr url, and naming strategy and created the
-   * {@link Properties} instance to be used by the producer.
+   * Constructor that takes the CLI instance and use it to create a {@link Properties} instance to
+   * be used by the producer.
    *
-   * @param kafkaBootstrapUrl the {@link String} kafka bootstrap url.
-   * @param serviceRegistryUrl the {@link String} service registry url.
-   * @param namingStrategy the {@link NamingStrategy} member.
+   * @param cli the {@link PushCli} instance for configuring the kafka producer with its fields.
    */
-  public AvroSchemaPusher(
-      final String kafkaBootstrapUrl,
-      final String serviceRegistryUrl,
-      final NamingStrategy namingStrategy) {
-    this.producerProps = createProps(kafkaBootstrapUrl, serviceRegistryUrl, namingStrategy);
+  public AvroSchemaPusher(final PushCli cli) {
+    this.producerProps = createProps(cli);
   }
 
   @Override
@@ -94,17 +91,17 @@ public final class AvroSchemaPusher implements SchemaPusher {
   /**
    * Utility method for creating the set of properties to be used by the producer.
    *
-   * @param kafkaBootstrapUrl the {@link String} kafka bootstrap url.
-   * @param serviceRegistryUrl the {@link String} service registry url.
-   * @param namingStrategy the {@link NamingStrategy} member.
+   * @param cli the {@link PushCli} instance for creating the {@link Properties} instance with.
    * @return an instance of {@link Properties}.
    */
-  private Properties createProps(
-      final String kafkaBootstrapUrl,
-      final String serviceRegistryUrl,
-      final NamingStrategy namingStrategy) {
+  private Properties createProps(final PushCli cli) {
+    // get info from the cli
+    var kafkaBootstrapUrl = cli.getKafkaBootstrap();
+    var registryUrl = cleanUrlEnd.andThen(concatConfluentMap).apply(cli.getServiceRegistry());
+    var namingStrategy = cli.getNamingStrategy();
+    var selfSignedInfo = cli.getSelfSignedInfo();
+    // create, populate, and return the properties instance
     var props = new Properties();
-    var registryUrl = cleanUrlEnd.andThen(concatConfluentMap).apply(serviceRegistryUrl);
     // set the kafka bootstrap and rh service registry urls
     props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaBootstrapUrl);
     props.put(AbstractKafkaSchemaSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG, registryUrl);
@@ -117,11 +114,21 @@ public final class AvroSchemaPusher implements SchemaPusher {
     // set selected naming strategy
     props.put(
         AbstractKafkaSchemaSerDeConfig.VALUE_SUBJECT_NAME_STRATEGY, namingStrategy.getStrategy());
-    // if the bootstrap server is secured (standard for amq) set SSL as the protocol
-    props.put(
-        CommonClientConfigs.SECURITY_PROTOCOL_CONFIG,
-        isSecured(kafkaBootstrapUrl) ? "SSL" : CommonClientConfigs.DEFAULT_SECURITY_PROTOCOL);
+    // if the bootstrap server is secured (standard for amq)
+    if (isSecured(kafkaBootstrapUrl)) {
+      // set SSL as the protocol
+      props.put(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, "SSL");
+      // if supplied truststore and password
+      if (nonNull(selfSignedInfo)) {
+        var kafkaTruststorePath = cli.getSelfSignedInfo().getKafkaTruststoreJksPath();
+        var kafkaTruststorePassword = cli.getSelfSignedInfo().getKafkaTruststorePassword();
+        if (nonNull(kafkaTruststorePath) && nonNull(kafkaTruststorePassword)) {
+          props.put(SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG, kafkaTruststorePath);
+          props.put(SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG, kafkaTruststorePassword);
+        }
+      }
 
+    }
     return props;
   }
 }
