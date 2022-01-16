@@ -73,7 +73,7 @@ public abstract class PushCli implements Callable<Integer> {
 
     @Option(
       names = {"-p", "--truststore-password"},
-      description = "The password for the truststore jsk file for use with the Kafka producer",
+      description = "The password for the truststore jks file for use with the Kafka producer",
       required = true)
     private String truststorePassword;
 

@@ -30,11 +30,14 @@ quay.io/ecosystem-appeng/schema-pusher:latest \
 --registry http://<service-registry-route-url-goes-here> \
 --strategy topic_record \
 --topic topic1 --topic anothertopic1 --topic onemoretopic1 \
---content $(base64 -w 0 schema_files.tar.gz)
+--content $(base64 -w 0 schema_files.tar.gz) \
+--certificate $(base64 -w 0 kafka_bootstrap_ca.crt)
 ```
 
-> Note, for `AMQ Streams`, the bootstrap route is probably a secured one.</br>
-> Also note, when producing messages to multiple topics, only the *topic_record* strategy is allowed.
+> Note, when producing messages to multiple topics, only the *topic_record* strategy is allowed.</br>
+> Also Note, for `AMQ Streams`, the bootstrap route is probably a secured one.</br>
+> If you use a self-signed certificate for you kafka deployment,</br>
+> you can use the optional `--certificate` parameter to pass a *base64* encoded representation of your certificate.
 
 For help:
 
@@ -45,32 +48,34 @@ docker run --rm -it quay.io/ecosystem-appeng/schema-pusher:latest --help
 prints:
 
 ```text
-Script for decoding and extracting base64 tar.gz archive containing schema files.
-The schema files will be then pushed to Red Hat's service registry via the attached Java app.
----------------------------------------------------------------------------------------------
+Tool for decoding and extracting base64 tar.gz archive containing schema files.
+The schema files will be pushed to Red Hat's service registry via the attached Java application.
+------------------------------------------------------------------------------------------------
 Usage: -h/--help
 Usage: [options]
 
 Options:
---bootstrap, kafka bootstrap url.
---registry, service registry url.
---strategy, subject naming strategy, [topic, record, topic_record].
---topic (repeatable), topic/s to push the schemas to.
---content, base64 encoded 'tar.gz' archive containing the schema files.
+--bootstrap, (mandatory) kafka bootstrap url.
+--registry, (mandatory) service registry url.
+--strategy, (optional) subject naming strategy, [topic, record, topic_record] (default: topic_record).
+--topic (mandatory), topic/s to push the schemas to (repeatable).
+--content, (mandatory) base64 encoded 'tar.gz' archive containing the schema files.
+--certificate, (optional) base64 encoded certificate for using with the bootstrap.
 
 Example:
 --bootstrap https://kafka-bootstrap-url:443 --registry http://service-registry-url:8080 \
 --strategy topic_record --topic sometopic --topic anothertopic --topic onemoretopic \
 --content $(base64 -w 0 schema_files.tar.gz)
+--certificate $(base64 -w 0 kafka_bootstrap_ca.cert)
 
 This should result in extracting the tar.gz archive decoded from the content parameter's value,
-the extracted schema files will be pushed to the kafka and registry instances using the specified subject
+the extracted schema files will be pushed to kafka/registry instance using the specified subject
 naming strategy.
 Each schema file will be pushed to all the specified topics, for the example above, if the
-the archive contains 2 schema files, then 6 schemas will be pushed, one per topic specified.
+archive contains 2 schema files, then 6 schemas will be pushed, one per each topic specified.
 
 Please note, multiple topics are only supported with the 'topic_record' naming strategy, the
-other strategies ('topic' and 'record') will result in messages overwriting each other.
+other strategies ('topic' and 'record') will result in messages overwriting eachother.
 ```
 
 ### Example usage
@@ -88,68 +93,14 @@ Each schema will be produced per each topic.
 Since the example above specifies three topics, and we have three schemas,</br>
 hence, with the *topic_record* strategy, a total of nine messages will be produced.
 
-### Other invocation options
-
-The docker image wraps a *Shell* script invoking a *Java* application.</br>
-You can invoke the [shell script][54] directly:
-
-```shell
-./src/main/shell/entrypoint.sh \
---bootstrap https://<kafka-bootstrap-route-url-goes-here>:443 \
---registry http://<service-registry-route-url-goes-here> \
---strategy topic_record \
---topic topic1 --topic anothertopic1 --topic onemoretopic1 \
---content $(base64 -w 0 schema_files.tar.gz)
-```
-
-You can also invoke the *Java* application directly,</br>
-just keep in mind that the app takes a directory of schema files and not an encoded base64 value,</br>
-the *Shell* script is the comonent in charge of decoding and extracting the archive prior to invoking
-the *Java* app.</br>
-
-> Note that this form of execution requires an application build.
-
-```shell
-java -jar target/schema-pusher-jar-with-dependencies.jar \
--b=https://<kafka-bootstrap-route-url-goes-here>:443 \
--r=http://<service-registry-route-url-goes-here> \
--t=topic1 -t=anothertopic1 -t=onemoretopic1 \
--d src/test/resources/com/redhat/schema/pusher/avro/schemas/
-```
-
-> Note that for the *Java* invocation, the *topic_record* strategy is the default one used if none is specified.
-
-For help:
-
-```shell
-java -jar target/schema-pusher-jar-with-dependencies.jar --help
-```
-
-prints:
-
-```text
-Usage: <main class> [-hV] -b=<kafkaBootstrap> -d=<directory> [-n=<namingStrategy>]
-                 -r=<serviceRegistry> (-t=<topic>)...
-Push schemas to Red Hat's Service Registry
-  -b, --bootstrap-url=<kafkaBootstrap>
-                        The url for Kafka's bootstrap server.
-  -d, --directory=<directory>
-                        The path of the directory containing the schema files.
-  -h, --help            Show this help message and exit.
-  -n, --naming-strategy=<namingStrategy>
-                        The subject naming strategy.
-  -r, --registry-url=<serviceRegistry>
-                        The url for Red Hat's service registry.
-  -t, --topic=<topic>   The topic to produce the message too, repeatable.
-  -V, --version         Print version information and exit.
-```
-
 ## Supported schema types
 
 At the time of writing this, this application supports [Apache AVRO][16].</br>
 Supported file types are `JSON`, `AVSC`, `AVRO`, other types won't get picked up by the application.
 
 ## Development
+
+### Application walkthrough
 
 This application is constructed of three layers:
 
@@ -168,6 +119,60 @@ This application is constructed of three layers:
 - A [Shell script][54] is in charge of decoding the archive, extracting it, and invoking
   the *Java* application with the extracted content.
 - A [Dockerfile][61] instruction set in charge of containerizing the *Shell* script and the *Java* application.
+
+### Invoking the Java App directly
+
+You can invoke the *Java* application directly,</br>
+keep in mind that the app takes a directory of schema files and not an encoded base64 value,</br>
+as well as a jks path and literal password instead of an encoded certificate.</br>
+The *Shell* script is the component in charge of decoding and extracting the archive,
+as well as creating the truststore prior to invoking the *Java* app.</br>
+
+> Note that this form of execution requires an application build.
+
+```shell
+java -jar target/schema-pusher-jar-with-dependencies.jar \
+-b=https://<kafka-bootstrap-route-url-goes-here>:443 \
+-r=http://<service-registry-route-url-goes-here> \
+-t=topic1 -t=anothertopic1 -t=onemoretopic1 \
+-d=src/test/resources/com/redhat/schema/pusher/avro/schemas/ \
+-j=./truststore.jks \
+-p=password
+```
+
+> Note that the *topic_record* strategy is the default one used if none is specified.
+
+For help:
+
+```shell
+java -jar target/schema-pusher-jar-with-dependencies.jar --help
+```
+
+prints:
+
+```text
+Usage: <main class> [-hV] -b=<kafkaBootstrap> -d=<directory>
+                    [-n=<namingStrategy>] -r=<serviceRegistry> (-t=<topic>)...
+                    [-j=<truststoreJksPath> -p=<truststorePassword>]
+Push schemas to Red Hat's Service Registry
+  -b, --bootstrap-url=<kafkaBootstrap>
+                        The url for Kafka's bootstrap server.
+  -d, --directory=<directory>
+                        The path of the directory containing the schema files.
+  -h, --help            Show this help message and exit.
+  -j, --truststore-jks-path=<truststoreJksPath>
+                        The path for the truststore jks file for use with the
+                          Kafka producer
+  -n, --naming-strategy=<namingStrategy>
+                        The subject naming strategy.
+  -p, --truststore-password=<truststorePassword>
+                        The password for the truststore jks file for use with
+                          the Kafka producer
+  -r, --registry-url=<serviceRegistry>
+                        The url for Red Hat's service registry.
+  -t, --topic=<topic>   The topic to produce the message too, repeatable.
+  -V, --version         Print version information and exit.
+```
 
 ### Usefull build commands
 
