@@ -237,7 +237,7 @@ docker run --rm -e RUN_LOCAL=true -e IGNORE_GITIGNORED_FILES=true -e VALIDATE_BA
   mvn package k8s:build k8s:push
   ```
 
-- Set the next development version iteration, add, commit, and push it:
+- Set the next development version iteration, add, commit, and push:
 
   ```shell
   mvn versions:set -DnextSnapshot
