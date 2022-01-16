@@ -32,6 +32,7 @@ import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.serialization.StringSerializer;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -98,6 +99,8 @@ class Avro_schema_pusher_implementation_Test {
     given(mockCli.getSelfSignedInfo()).willReturn(mockSelfSignedInfo);
     // instantiate the sut with the fake info
     sut = new AvroSchemaPusher(mockCli);
+    // turn off the sut's logger to avoid polluting the build log
+    ((Logger) getField(sut, "LOGGER")).setLevel(Level.OFF);
     // stub the private di context
     setField(sut, "context", mockContext);
     // stub the producer with a mocked future for any send methd invocation
