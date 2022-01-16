@@ -28,6 +28,8 @@ class Cli_options_and_utility_methods_Test {
   private static final String FAKE_REGISTRY = "http://fake-redhat-service-registry";
   private static final String FAKE_TOPIC = "faketopic";
   private static final String FAKE_DIRECTORY = "/path/to/schemas/";
+  private static final String FAKE_TRUSTSTORE_JKS_PATH = "/path/to/truststore.jks";
+  private static final String FAKE_TRUSTSTORE_PASSWORD = "hideme123#@!";
 
   private PushCli sut;
   private CommandLine cmd;
@@ -53,6 +55,8 @@ class Cli_options_and_utility_methods_Test {
       @Values(strings = {"-n", "--naming-strategy"}) final String strategyKey,
       @Values(strings = {"-t", "--topic"}) final String topicKey,
       @Values(strings = {"-d", "--directory"}) final String directoryKey,
+      @Values(strings = {"-j", "--truststore-jks-path"}) final String truststoreJksKey,
+      @Values(strings = {"-p", "--truststore-password"}) final String truststorePasswordKey,
       @Enum final NamingStrategy strategy) {
     // when parsing the command line args with all the possible options
     // then no exception should be thrown
@@ -64,7 +68,9 @@ class Cli_options_and_utility_methods_Test {
                     registryKey + "=" + FAKE_REGISTRY,
                     strategyKey + "=" + strategy.toString(),
                     topicKey + "=" + FAKE_TOPIC,
-                    directoryKey + "=" + FAKE_DIRECTORY));
+                    directoryKey + "=" + FAKE_DIRECTORY,
+                    truststoreJksKey + "=" + FAKE_TRUSTSTORE_JKS_PATH,
+                    truststorePasswordKey + "=" + FAKE_TRUSTSTORE_PASSWORD));
     // and all the arguments should be aggregated
     then(sut.getKafkaBootstrap()).isEqualTo(FAKE_BOOTSTRAP);
     then(sut.getServiceRegistry()).isEqualTo(FAKE_REGISTRY);
@@ -145,6 +151,34 @@ class Cli_options_and_utility_methods_Test {
         .isThrownBy(
             () -> cmd.parseArgs("-b=" + FAKE_BOOTSTRAP, "-r=" + FAKE_REGISTRY, "-t=" + FAKE_TOPIC))
         .withMessage("Missing required option: '--directory=<directory>'");
+  }
+
+  @Test
+  void parsing_while_specifying_the_truststore_jks_path_but_not_the_password_should_throw_an_exception() {
+    assertThatExceptionOfType(MissingParameterException.class)
+        .isThrownBy(
+            () ->
+                cmd.parseArgs(
+                    "-b=" + FAKE_BOOTSTRAP,
+                    "-r=" + FAKE_REGISTRY,
+                    "-t=" + FAKE_TOPIC,
+                    "-d=" + FAKE_DIRECTORY,
+                    "-j=" + FAKE_TRUSTSTORE_JKS_PATH))
+        .withMessage("Error: Missing required argument(s): --truststore-password=<truststorePassword>");
+  }
+
+  @Test
+  void parsing_while_specifying_the_truststore_password_but_not_the_jks_path_should_throw_an_exception() {
+    assertThatExceptionOfType(MissingParameterException.class)
+        .isThrownBy(
+            () ->
+                cmd.parseArgs(
+                    "-b=" + FAKE_BOOTSTRAP,
+                    "-r=" + FAKE_REGISTRY,
+                    "-t=" + FAKE_TOPIC,
+                    "-d=" + FAKE_DIRECTORY,
+                    "-p=" + FAKE_TRUSTSTORE_PASSWORD))
+        .withMessage("Error: Missing required argument(s): --truststore-jks-path=<truststoreJksPath>");
   }
 
   @Test

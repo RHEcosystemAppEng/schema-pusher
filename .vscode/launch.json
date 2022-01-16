@@ -7,17 +7,15 @@
       "request": "launch",
       "mainClass": "com.redhat.schema.pusher.MainApp",
       "projectName": "schema-pusher",
-      "env": {
-        "IN_DEV_MODE": true
-      },
-      "envFile": "${workspaceFolder}/.env",
       "args": [
-        "--bootstrap-url=https://<kafka-bootstrap-route-url-goes-here>:443",
-        "--registry-url=http://<service-registry-route-url-goes-here>",
+        "--bootstrap-url=https://my-cluster-kafka-bootstrap-tomer-avro.apps.ocp-dev01.lab.eng.tlv2.redhat.com:443",
+        "--registry-url=http://apicurioreg.tomer-avro.router-default.apps.ocp-dev01.lab.eng.tlv2.redhat.com",
         "--naming-strategy=topic_record",
         "--topic=topic1",
         "--topic=anothertopic1",
-        "--directory=${workspaceFolder}/src/test/resources/com/redhat/schema/pusher/avro/schemas/"
+        "--directory=${workspaceFolder}/src/test/resources/com/redhat/schema/pusher/avro/schemas/",
+        "--truststore-jks-path=${workspaceFolder}/truststore.jks",
+        "--truststore-password=password"
       ]
     }
   ]

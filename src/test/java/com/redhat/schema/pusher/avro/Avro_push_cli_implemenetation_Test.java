@@ -1,10 +1,13 @@
 package com.redhat.schema.pusher.avro;
 
 import static org.assertj.core.api.BDDAssertions.then;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.util.ReflectionTestUtils.getField;
 
 import com.redhat.schema.pusher.NamingStrategy;
+import com.redhat.schema.pusher.PushCli;
 import com.redhat.schema.pusher.ReturnCode;
 import com.redhat.schema.pusher.SchemaPusher;
 import java.net.URISyntaxException;
@@ -53,8 +56,7 @@ class Avro_push_cli_implemenetation_Test {
     // given the target directory has only one file
     var expectedFile = Paths.get(getClass().getClassLoader().getResource(DIRECTORY + "/test_schema_too.json").toURI());
     // given the mocked di context will return  the mock schema pusher per the arguments
-    given(mockContext.getBean(
-      SchemaPusher.class, FAKE_BOOTSTRAP, FAKE_REGISTRY, FAKE_NAMING_STRATEGY)).willReturn(mockSchemaPusher);
+    given(mockContext.getBean(eq(SchemaPusher.class), any(PushCli.class) )).willReturn(mockSchemaPusher);
     // given the mocked schema pusher will return a success code for the fake topic and testing schema file path
     given(mockSchemaPusher.push(List.of(FAKE_TOPIC), List.of(expectedFile))).willReturn(ReturnCode.SUCCESS);
     // when the sut executes, then the stubbed return success code should be success

@@ -12,16 +12,18 @@ show_usage() {
   echo "Usage: [options]"
   echo ""
   echo "Options:"
-  echo "--bootstrap, kafka bootstrap url."
-  echo "--registry, service registry url."
-  echo "--strategy, subject naming strategy, [${naming_strategies[@]}]."
-  echo "--topic (repeatable), topic/s to push the schemas to."
-  echo "--content, base64 encoded 'tar.gz' archive containing the schema files."
+  echo "--bootstrap, (mandatory) kafka bootstrap url."
+  echo "--registry, (mandatory) service registry url."
+  echo "--strategy, (optional) subject naming strategy, [${naming_strategies[@]}] (default: topic_record)."
+  echo "--topic (mandatory), topic/s to push the schemas to (repeatable)."
+  echo "--content, (mandatory) base64 encoded 'tar.gz' archive containing the schema files."
+  echo "--certificate, (optional) base64 encoded certificate for using with the bootstrap."
   echo ""
   echo "Example:"
   echo "--bootstrap https://kafka-bootstrap-url:443 --registry http://service-registry-url:8080 \\"
   echo "--strategy topic_record --topic sometopic --topic anothertopic --topic onemoretopic \\"
   echo "--content \$(base64 -w 0 schema_files.tar.gz)"
+  echo "--certificate \$(base64 -w 0 kafka_bootstrap_ca.cert)"
   echo ""
   echo "This should result in extracting the tar.gz archive decoded from the content parameter's value,"
   echo "the extracted schema files will be pushed to kafka/registry instance using the specified subject"
@@ -57,8 +59,11 @@ while [ $# -gt 0 ]; do
   shift
 done
 
-# verify named parameters existence
-if [ -z "$bootstrap" ] || [ -z "$registry" ] || [ -z "$strategy" ] || [ -z "$content" ]; then
+# default named parameters
+strategy=${strategy:-topic_record}
+
+# verify mandatory named parameters existence
+if [ -z "$bootstrap" ] || [ -z "$registry" ] || [ -z "$content" ]; then
   echo "expected parameter/s missing."
   show_usage
   exit 1
@@ -101,6 +106,21 @@ for topic in "${topics[@]}"
 do
   java_cmd+=" --topic=$topic"
 done
+
+# if provided certificate for the bootstrap, create a truststore and add it to the java command
+if [[ -v certificate ]]; then
+  # create certificate destination directory
+  cert_dir=certs
+  mkdir $cert_dir
+  # decode the certificate
+  echo $certificate | base64 --decode - > $cert_dir/ca-cert.crt
+  # create a random password for using with the truststore
+  jkspass=$(echo $RANDOM | md5sum | head -c 20)
+  # create the truststore from the decoded certicate using the randon password
+  keytool -import -trustcacerts -noprompt -alias root -file $cert_dir/ca-cert.crt -keystore $cert_dir/truststore.jks -storepass $jkspass
+  # append the jks path and password to the java command
+  java_cmd+=" --truststore-jks-path=$cert_dir/truststore.jks --truststore-password=$jkspass"
+fi
 
 # execute the java command
 ret_code=eval $java_cmd

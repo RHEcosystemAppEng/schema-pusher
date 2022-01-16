@@ -47,8 +47,11 @@ public abstract class PushCli implements Callable<Integer> {
   @ArgGroup(exclusive = false, multiplicity = "1..*")
   private List<TopicAggregator> topicAggregators;
 
+  @ArgGroup(exclusive = false, multiplicity = "0..1")
+  private SelfSignedInfo selfSignedInfo;
+
   /** Use for aggregating topics specified by the user. */
-  protected static final class TopicAggregator {
+  public static final class TopicAggregator {
     @Option(
       names = {"-t", "--topic"},
       description = "The topic to produce the message too, repeatable.",
@@ -57,6 +60,29 @@ public abstract class PushCli implements Callable<Integer> {
 
     public String getTopic() {
       return this.topic;
+    }
+  }
+
+  /** Use for binding the truststore path and password keys. */
+  public static final class SelfSignedInfo {
+    @Option(
+      names = {"-j", "--truststore-jks-path"},
+      description = "The path for the truststore jks file for use with the Kafka producer",
+      required = true)
+    private String truststoreJksPath;
+
+    @Option(
+      names = {"-p", "--truststore-password"},
+      description = "The password for the truststore jks file for use with the Kafka producer",
+      required = true)
+    private String truststorePassword;
+
+    public String getTruststoreJksPath() {
+      return this.truststoreJksPath;
+    }
+
+    public String getTruststorePassword() {
+      return this.truststorePassword;
     }
   }
 
@@ -110,7 +136,7 @@ public abstract class PushCli implements Callable<Integer> {
    *
    * @return a {@link String} url.
    */
-  protected String getKafkaBootstrap() {
+  public String getKafkaBootstrap() {
     return this.kafkaBootstrap;
   }
 
@@ -119,7 +145,7 @@ public abstract class PushCli implements Callable<Integer> {
    *
    * @return a {@link String} url.
    */
-  protected String getServiceRegistry() {
+  public String getServiceRegistry() {
     return this.serviceRegistry;
   }
 
@@ -128,7 +154,7 @@ public abstract class PushCli implements Callable<Integer> {
    *
    * @return a {@link NamingStrategy} member.
    */
-  protected NamingStrategy getNamingStrategy() {
+  public NamingStrategy getNamingStrategy() {
     return this.namingStrategy;
   }
 
@@ -137,7 +163,7 @@ public abstract class PushCli implements Callable<Integer> {
    *
    * @return a {@link List} of {@link TopicAggregator} instances.
    */
-  protected List<TopicAggregator> getTopicAggregators() {
+  public List<TopicAggregator> getTopicAggregators() {
     return this.topicAggregators;
   }
 
@@ -146,7 +172,16 @@ public abstract class PushCli implements Callable<Integer> {
    *
    * @return a {@link String} directory path.
    */
-  protected String getDirectory() {
+  public String getDirectory() {
     return this.directory;
+  }
+
+  /**
+   * Get the self-signed information as specified by the user.
+   *
+   * @return a {@link SelfSingedInfo} instance.
+   */
+  public SelfSignedInfo getSelfSignedInfo() {
+    return this.selfSignedInfo;
   }
 }

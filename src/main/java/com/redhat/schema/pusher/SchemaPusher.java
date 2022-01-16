@@ -3,7 +3,7 @@ package com.redhat.schema.pusher;
 import java.nio.file.Path;
 import java.util.List;
 
-/** Interface for contracting the scheme pusher implementations. */
+/** Interface for contracting the schema pusher implementations. */
 public interface SchemaPusher {
   /**
    * Push a list of schemas to push to for topic in a list of topics.

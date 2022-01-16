@@ -46,9 +46,7 @@ public final class AvroPushCli extends PushCli {
   public Integer call() {
     validate();
     LOGGER.info("starting");
-    var schemaPusher =
-        context.getBean(
-            SchemaPusher.class, getKafkaBootstrap(), getServiceRegistry(), getNamingStrategy());
+    var schemaPusher = context.getBean(SchemaPusher.class, this);
     LOGGER.info("loading schemas");
     List<Path> schemas;
     try {
@@ -60,6 +58,7 @@ public final class AvroPushCli extends PushCli {
     }
     LOGGER.info("loading topics");
     var topics = getTopicAggregators().stream().map(TopicAggregator::getTopic).toList();
+    LOGGER.info("starting push");
     var retCode = schemaPusher.push(topics, schemas);
     LOGGER.info("done");
     return retCode.code();
