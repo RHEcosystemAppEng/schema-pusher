@@ -14,6 +14,7 @@ jobs:
     - name: Create a release
       uses: actions/github-script@v5.0.0
       with:
+        # editorconfig-checker-disable-max-line-length
         script: |
           const repo_name = context.payload.repository.full_name
           const tag = context.ref.substr('refs/tags/'.length)

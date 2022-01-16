@@ -1,3 +1,4 @@
+// editorconfig-checker-disable-max-line-length
 package com.redhat.schema.pusher.avro;
 
 import static org.assertj.core.api.BDDAssertions.then;
@@ -24,6 +25,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationContext;
 import picocli.CommandLine;
 
+/** Test cases for the AVRO push cli implementation. */
 @ExtendWith(MockitoExtension.class)
 class Avro_push_cli_implemenetation_Test {
   private static final String FAKE_BOOTSTRAP = "https://fake-kafka-bootstrap:443";
@@ -56,7 +58,7 @@ class Avro_push_cli_implemenetation_Test {
     // given the target directory has only one file
     var expectedFile = Paths.get(getClass().getClassLoader().getResource(DIRECTORY + "/test_schema_too.json").toURI());
     // given the mocked di context will return  the mock schema pusher per the arguments
-    given(mockContext.getBean(eq(SchemaPusher.class), any(PushCli.class) )).willReturn(mockSchemaPusher);
+    given(mockContext.getBean(eq(SchemaPusher.class), any(PushCli.class))).willReturn(mockSchemaPusher);
     // given the mocked schema pusher will return a success code for the fake topic and testing schema file path
     given(mockSchemaPusher.push(List.of(FAKE_TOPIC), List.of(expectedFile))).willReturn(ReturnCode.SUCCESS);
     // when the sut executes, then the stubbed return success code should be success

@@ -1,9 +1,8 @@
 ---
-name: Build
+name: Stage
 
 on:
   workflow_dispatch:
-  pull_request:
   push:
     branches:
       - main

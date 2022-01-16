@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # supported subject naming strategies
-declare -a naming_strategies=("topic", "record", "topic_record")
+declare -a naming_strategies=("topic" "record" "topic_record")
 
 show_usage() {
   echo ""
@@ -14,7 +14,7 @@ show_usage() {
   echo "Options:"
   echo "--bootstrap, (mandatory) kafka bootstrap url."
   echo "--registry, (mandatory) service registry url."
-  echo "--strategy, (optional) subject naming strategy, [${naming_strategies[@]}] (default: topic_record)."
+  echo "--strategy, (optional) subject naming strategy, [${naming_strategies[*]}] (default: topic_record)."
   echo "--topic (mandatory), topic/s to push the schemas to (repeatable)."
   echo "--content, (mandatory) base64 encoded 'tar.gz' archive containing the schema files."
   echo "--certificate, (optional) base64 encoded certificate for using with the bootstrap."
@@ -53,7 +53,7 @@ while [ $# -gt 0 ]; do
       topics+=("$2")
     else
       # else declare it
-      declare $param="$2"
+      declare "$param"="$2"
     fi
   fi
   shift
@@ -70,7 +70,7 @@ if [ -z "$bootstrap" ] || [ -z "$registry" ] || [ -z "$content" ]; then
 fi
 
 # verify supported strategy
-if ! [[ ${naming_strategies[*]} =~ "$strategy" ]]; then
+if ! [[ ${naming_strategies[*]} =~ $strategy ]]; then
   echo "unknown subject naming strategy $strategy."
   show_usage
   exit 1
@@ -95,7 +95,7 @@ dest_dir=tmp_schemas
 mkdir $dest_dir
 
 # decode the the tar.gz archive and extract it's content
-echo $content | base64 --decode - | tar -C $dest_dir -xz
+echo "$content" | base64 --decode - | tar -C $dest_dir -xz
 
 # create the java command for executing the program
 java_cmd="java -jar /app/schema-pusher-jar-with-dependencies.jar \
@@ -113,20 +113,20 @@ if [[ -v certificate ]]; then
   cert_dir=certs
   mkdir $cert_dir
   # decode the certificate
-  echo $certificate | base64 --decode - > $cert_dir/ca-cert.crt
+  echo "$certificate" | base64 --decode - > $cert_dir/ca-cert.crt
   # create a random password for using with the truststore
   jkspass=$(echo $RANDOM | md5sum | head -c 20)
   # create the truststore from the decoded certicate using the randon password
-  keytool -import -trustcacerts -noprompt -alias root -file $cert_dir/ca-cert.crt -keystore $cert_dir/truststore.jks -storepass $jkspass
+  keytool -import -trustcacerts -noprompt -alias root -file $cert_dir/ca-cert.crt -keystore $cert_dir/truststore.jks -storepass "$jkspass"
   # append the jks path and password to the java command
   java_cmd+=" --truststore-jks-path=$cert_dir/truststore.jks --truststore-password=$jkspass"
 fi
 
 # execute the java command
-ret_code=eval $java_cmd
+ret_code=$(eval "$java_cmd")
 
 # clean up the destination directory
 rm -r $dest_dir
 
 # exit with the java app's return code
-exit $ret_code
+exit "$ret_code"

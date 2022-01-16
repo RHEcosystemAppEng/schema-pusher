@@ -20,9 +20,9 @@ import picocli.CommandLine.Command;
  */
 @Component
 @Command(
-  description = "Push schemas to Red Hat's Service Registry",
-  mixinStandardHelpOptions = true,
-  versionProvider = ManifestVersionProvider.class)
+    description = "Push schemas to Red Hat's Service Registry",
+    mixinStandardHelpOptions = true,
+    versionProvider = ManifestVersionProvider.class)
 public final class AvroPushCli extends PushCli {
   private static final Logger LOGGER = Logger.getLogger(AvroPushCli.class.getName());
   private static final List<String> SUPPORTED_EXTENSIONS = List.of("json", "avsc", "avro");
@@ -46,18 +46,21 @@ public final class AvroPushCli extends PushCli {
   public Integer call() {
     validate();
     LOGGER.info("starting");
-    var schemaPusher = context.getBean(SchemaPusher.class, this);
     LOGGER.info("loading schemas");
     List<Path> schemas;
     try {
       schemas = getPathList(SUPPORTED_EXTENSIONS, getDirectory());
     } catch (final IOException ioe) {
       LOGGER.log(
-        Level.SEVERE, ioe, () -> String.format("failed to get schema files from directory '%s'", getDirectory()));
+          Level.SEVERE,
+          ioe,
+          () -> String.format("failed to get schema files from directory '%s'", getDirectory()));
       return DIRECTORY_ERROR.code();
     }
     LOGGER.info("loading topics");
     var topics = getTopicAggregators().stream().map(TopicAggregator::getTopic).toList();
+    LOGGER.info("loading schema pusher");
+    var schemaPusher = context.getBean(SchemaPusher.class, this);
     LOGGER.info("starting push");
     var retCode = schemaPusher.push(topics, schemas);
     LOGGER.info("done");

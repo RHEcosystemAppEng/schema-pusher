@@ -28,9 +28,9 @@ public final class ManifestVersionProvider implements IVersionProvider {
       var appName = attributes.getValue(APP_NAME_KEY);
       var appVersion = attributes.getValue(APP_VERSION_KEY);
       if (nonNull(appName) && nonNull(appVersion)) {
-        return new String[] { String.format("%s %s", appName, appVersion) };
+        return new String[] {String.format("%s %s", appName, appVersion)};
       }
     }
-    return new String[] { DEFAULT_VERSION };
+    return new String[] {DEFAULT_VERSION};
   }
 }

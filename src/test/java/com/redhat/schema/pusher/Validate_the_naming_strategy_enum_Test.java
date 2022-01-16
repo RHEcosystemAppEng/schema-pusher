@@ -10,6 +10,7 @@ import java.util.stream.Stream;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
 
+/** Verify the members of the naming strategy enum. */
 class Validate_the_naming_strategy_enum_Test {
   @TestFactory
   Stream<DynamicTest> verify_members_strategy_class_equivalents() {
