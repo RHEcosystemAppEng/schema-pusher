@@ -55,8 +55,8 @@ class Cli_options_and_utility_methods_Test {
       @Values(strings = {"-n", "--naming-strategy"}) final String strategyKey,
       @Values(strings = {"-t", "--topic"}) final String topicKey,
       @Values(strings = {"-d", "--directory"}) final String directoryKey,
-      @Values(strings = {"-kj", "--kafka-truststore-jks-path"}) final String truststoreJksKey,
-      @Values(strings = {"-kp", "--kafka-truststore-password"}) final String truststorePasswordKey,
+      @Values(strings = {"-j", "--truststore-jks-path"}) final String truststoreJksKey,
+      @Values(strings = {"-p", "--truststore-password"}) final String truststorePasswordKey,
       @Enum final NamingStrategy strategy) {
     // when parsing the command line args with all the possible options
     // then no exception should be thrown
@@ -163,8 +163,8 @@ class Cli_options_and_utility_methods_Test {
                     "-r=" + FAKE_REGISTRY,
                     "-t=" + FAKE_TOPIC,
                     "-d=" + FAKE_DIRECTORY,
-                    "-kj=" + FAKE_TRUSTSTORE_JKS_PATH))
-        .withMessage("Error: Missing required argument(s): --kafka-truststore-password=<kafkaTruststorePassword>");
+                    "-j=" + FAKE_TRUSTSTORE_JKS_PATH))
+        .withMessage("Error: Missing required argument(s): --truststore-password=<truststorePassword>");
   }
 
   @Test
@@ -177,8 +177,8 @@ class Cli_options_and_utility_methods_Test {
                     "-r=" + FAKE_REGISTRY,
                     "-t=" + FAKE_TOPIC,
                     "-d=" + FAKE_DIRECTORY,
-                    "-kp=" + FAKE_TRUSTSTORE_PASSWORD))
-        .withMessage("Error: Missing required argument(s): --kafka-truststore-jks-path=<kafkaTruststoreJksPath>");
+                    "-p=" + FAKE_TRUSTSTORE_PASSWORD))
+        .withMessage("Error: Missing required argument(s): --truststore-jks-path=<truststoreJksPath>");
   }
 
   @Test

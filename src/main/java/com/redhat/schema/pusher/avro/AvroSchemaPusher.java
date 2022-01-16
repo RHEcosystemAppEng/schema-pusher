@@ -120,8 +120,8 @@ public final class AvroSchemaPusher implements SchemaPusher {
       props.put(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, "SSL");
       // if supplied truststore and password
       if (nonNull(selfSignedInfo)) {
-        var kafkaTruststorePath = cli.getSelfSignedInfo().getKafkaTruststoreJksPath();
-        var kafkaTruststorePassword = cli.getSelfSignedInfo().getKafkaTruststorePassword();
+        var kafkaTruststorePath = cli.getSelfSignedInfo().getTruststoreJksPath();
+        var kafkaTruststorePassword = cli.getSelfSignedInfo().getTruststorePassword();
         if (nonNull(kafkaTruststorePath) && nonNull(kafkaTruststorePassword)) {
           props.put(SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG, kafkaTruststorePath);
           props.put(SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG, kafkaTruststorePassword);

@@ -89,8 +89,8 @@ class Avro_schema_pusher_implementation_Test {
   void pushing_one_file_and_one_topic_should_result_in_one_producer_records_sent(
       @Mock final SelfSignedInfo mockSelfSignedInfo) throws URISyntaxException {
     // stub the self signed info
-    given(mockSelfSignedInfo.getKafkaTruststoreJksPath()).willReturn(FAKE_TRUSTSTORE_JKS_PATH);
-    given(mockSelfSignedInfo.getKafkaTruststorePassword()).willReturn(FAKE_TRUSTSTORE_PASSWORD);
+    given(mockSelfSignedInfo.getTruststoreJksPath()).willReturn(FAKE_TRUSTSTORE_JKS_PATH);
+    given(mockSelfSignedInfo.getTruststorePassword()).willReturn(FAKE_TRUSTSTORE_PASSWORD);
     // stub the cli
     given(mockCli.getKafkaBootstrap()).willReturn(FAKE_SECURED_BOOTSTRAP);
     given(mockCli.getServiceRegistry()).willReturn(FAKE_REGISTRY);

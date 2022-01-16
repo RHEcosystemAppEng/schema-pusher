@@ -66,23 +66,23 @@ public abstract class PushCli implements Callable<Integer> {
   /** Use for binding the truststore path and password keys. */
   public static final class SelfSignedInfo {
     @Option(
-      names = {"-kj", "--kafka-truststore-jks-path"},
+      names = {"-j", "--truststore-jks-path"},
       description = "The path for the truststore jks file for use with the Kafka producer",
       required = true)
-    private String kafkaTruststoreJksPath;
+    private String truststoreJksPath;
 
     @Option(
-      names = {"-kp", "--kafka-truststore-password"},
+      names = {"-p", "--truststore-password"},
       description = "The password for the truststore jsk file for use with the Kafka producer",
       required = true)
-    private String kafkaTruststorePassword;
+    private String truststorePassword;
 
-    public String getKafkaTruststoreJksPath() {
-      return this.kafkaTruststoreJksPath;
+    public String getTruststoreJksPath() {
+      return this.truststoreJksPath;
     }
 
-    public String getKafkaTruststorePassword() {
-      return this.kafkaTruststorePassword;
+    public String getTruststorePassword() {
+      return this.truststorePassword;
     }
   }
 

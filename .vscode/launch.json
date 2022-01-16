@@ -14,8 +14,8 @@
         "--topic=topic1",
         "--topic=anothertopic1",
         "--directory=${workspaceFolder}/src/test/resources/com/redhat/schema/pusher/avro/schemas/",
-        "--kafka-truststore-jks-path=/home/tomerfi/vscode-workspace/redhat/schema-pusher/truststore.jks",
-        "--kafka-truststore-password=password"
+        "--truststore-jks-path=${workspaceFolder}/truststore.jks",
+        "--truststore-password=password"
       ]
     }
   ]

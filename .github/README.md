@@ -207,7 +207,7 @@ This application is constructed of three layers:
   mvn package k8s:build k8s:push
   ```
 
-- Set the next development version iteration, add, commit, tag, and push it:
+- Set the next development version iteration, add, commit, and push it:
 
   ```shell
   mvn versions:set -DnextSnapshot
