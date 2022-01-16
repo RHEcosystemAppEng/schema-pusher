@@ -35,9 +35,15 @@ quay.io/ecosystem-appeng/schema-pusher:latest \
 ```
 
 > Note, when producing messages to multiple topics, only the *topic_record* strategy is allowed.</br>
-> Also Note, for `AMQ Streams`, the bootstrap route is probably a secured one.</br>
-> If you use a self-signed certificate for you kafka deployment,</br>
-> you can use the optional `--certificate` parameter to pass a *base64* encoded representation of your certificate.
+> </br>
+> Also Note, for *AMQ Streams*, the bootstrap route is probably a secured one,</br>
+> if you use a self-signed certificate, you can use the optional *--certificate* parameter to pass a it as *base64* encoded.</br>
+> You can get the certificate from you deployment's scerets, look for the `*cluster-ca-cert` secret:
+> ```shell
+> oc extract secret/my-kafka-cluster-ca-cert --keys=ca.crt --to=- > kafka_bootstrap_ca.crt
+> ```
+
+## Get help
 
 For help:
 
@@ -78,7 +84,7 @@ Please note, multiple topics are only supported with the 'topic_record' naming s
 other strategies ('topic' and 'record') will result in messages overwriting eachother.
 ```
 
-### Example usage
+## Example usage
 
 The following is a *base64* representation of a *tar.gz* archive containing [these testing resources][50].</br>
 
@@ -86,10 +92,12 @@ The following is a *base64* representation of a *tar.gz* archive containing [the
 H4sIAAAAAAAAA+2Y24rbMBCGfZ2nML4OtnwU9AEKvWgpdKEXpQTHVjZebCtI8pay5N0ryTmVdSo1GC1L5rsxlkce0D//jBPOqkgQLiJGOB1YRXhU0U7e1dtSRLzakq6MdgPfEhaVz4welnjk2YMkGOfqGuMcXV6PeHEWF2mK4jxJPZSkOMaen/9HjpsZuCiZ73uCdoRtmqtxpufvFH6r/mrTarwJy2de/SOHErgosqv6p3Ex6p8UUvpY6o8RzjwfuTiAO9f/ZeH7QV92hO/KigQf/EDKH47yhwd5R/lDJf9hiQdLtU/83uktjFSU1eOaepdae5D10fSP33T8+GjTkLbm8uEPead4OUXr6/L8Ri6Y3Bzsl68im/oyrqbDuiXBXob9XOwXb32a74+b/c+H9Ya2tVw25rDu/7r9y7gkx6iA/u+CGfS/mAQrQWn4xGn/Vw5T/8/ksD/1/zzx5EDABfR/J7jp/w+UGkdA2VMh03yxngSHDZ8mB8JEeF2T+qPKP/X6ex0gc3z/rTrKiC6P6Rxm/ydn/8tvQSQHgfwMBP87wI3/P8sCMTYAVUX27lfRttZXsa+cv6a0JWV/v9bXzOJ/daQt4fxKDuPvv6w4/f7PMqT8j3AC/neBo/l/KBBjDzhWkn0fOO6Y7gV37W0bZvH/L0b7x1Cd/WQOs//jC//nyv9pWoD/XeDG/99VgagmYGwAupTs3a/Dwfq3M4v/d7TpRXg1h9H/aX7+/1/5P8GZXAL/O8CN/7+qAjF6X5eRvfd1OHgfAAAAAAAAAADAjj85mSqvACgAAA==
 ```
 
-Using this value with the example above will pick up three schema files, [test_schema.avsc][51],
-[test_schema_more.avro][52], and [subfolder/test_schema_too.json][53].</br>
-Each schema will be produced per each topic.
+Using this value with [the example above](#run) will pick up three schema files:
+- [test_schema.avsc][51]
+- [test_schema_more.avro][52]
+- [subfolder/test_schema_too.json][53]
 
+Each schema will be produced per each topic.</br>
 Since the example above specifies three topics, and we have three schemas,</br>
 hence, with the *topic_record* strategy, a total of nine messages will be produced.
 
@@ -116,8 +124,8 @@ This application is constructed of three layers:
     is the implementation in charge of pushing schema messages via the producer.
   - [com/redhat/schema/pusher/MainApp.java][59] is
     the main application starting point, instantiating the di context and loading the command line.
-- A [Shell script][54] is in charge of decoding the archive, extracting it, and invoking
-  the *Java* application with the extracted content.
+- A [Shell script][54] is in charge of decoding, extracting, and invoking the *Java* application with the extracted
+  content.
 - A [Dockerfile][61] instruction set in charge of containerizing the *Shell* script and the *Java* application.
 
 ### Invoking the Java App directly
@@ -125,7 +133,7 @@ This application is constructed of three layers:
 You can invoke the *Java* application directly,</br>
 keep in mind that the app takes a directory of schema files and not an encoded base64 value,</br>
 as well as a jks path and literal password instead of an encoded certificate.</br>
-The *Shell* script is the component in charge of decoding and extracting the archive,
+The *Shell* script is the component in charge of decoding and extracting the archive,</br>
 as well as creating the truststore prior to invoking the *Java* app.</br>
 
 > Note that this form of execution requires an application build.
