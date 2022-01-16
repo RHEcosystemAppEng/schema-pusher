@@ -1,9 +1,11 @@
 # Schema Pusher
 
 <!-- markdownlint-disable -->
+<!-- editorconfig-checker-disable -->
 <a href="https://quay.io/repository/ecosystem-appeng/schema-pusher">
     <img src="https://raw.githubusercontent.com/RHEcosystemAppEng/schema-pusher/main/images/docker_run_flow.png" width="700" height="300" alt="">
 </a>
+<!-- editorconfig-checker-enable -->
 <!-- markdownlint-restore -->
 
 [Red Hat's Service Registry][10], part of [Red Hat's Integration][11] services portfolio,</br>
@@ -37,8 +39,10 @@ quay.io/ecosystem-appeng/schema-pusher:latest \
 > Note, when producing messages to multiple topics, only the *topic_record* strategy is allowed.</br>
 > </br>
 > Also Note, for *AMQ Streams*, the bootstrap route is probably a secured one,</br>
-> if you use a self-signed certificate, you can use the optional *--certificate* parameter to pass a it as *base64* encoded.</br>
+> if you use a self-signed certificate, you can use the optional *--certificate* parameter to pass a it as *base64*
+> encoded.</br>
 > You can get the certificate from you deployment's scerets, look for the `*cluster-ca-cert` secret:
+>
 > ```shell
 > oc extract secret/my-kafka-cluster-ca-cert --keys=ca.crt --to=- > kafka_bootstrap_ca.crt
 > ```
@@ -87,12 +91,13 @@ other strategies ('topic' and 'record') will result in messages overwriting each
 ## Example usage
 
 The following is a *base64* representation of a *tar.gz* archive containing [these testing resources][50].</br>
-
+<!-- editorconfig-checker-disable-max-line-length -->
 ```text
 H4sIAAAAAAAAA+2Y24rbMBCGfZ2nML4OtnwU9AEKvWgpdKEXpQTHVjZebCtI8pay5N0ryTmVdSo1GC1L5rsxlkce0D//jBPOqkgQLiJGOB1YRXhU0U7e1dtSRLzakq6MdgPfEhaVz4welnjk2YMkGOfqGuMcXV6PeHEWF2mK4jxJPZSkOMaen/9HjpsZuCiZ73uCdoRtmqtxpufvFH6r/mrTarwJy2de/SOHErgosqv6p3Ex6p8UUvpY6o8RzjwfuTiAO9f/ZeH7QV92hO/KigQf/EDKH47yhwd5R/lDJf9hiQdLtU/83uktjFSU1eOaepdae5D10fSP33T8+GjTkLbm8uEPead4OUXr6/L8Ri6Y3Bzsl68im/oyrqbDuiXBXob9XOwXb32a74+b/c+H9Ya2tVw25rDu/7r9y7gkx6iA/u+CGfS/mAQrQWn4xGn/Vw5T/8/ksD/1/zzx5EDABfR/J7jp/w+UGkdA2VMh03yxngSHDZ8mB8JEeF2T+qPKP/X6ex0gc3z/rTrKiC6P6Rxm/ydn/8tvQSQHgfwMBP87wI3/P8sCMTYAVUX27lfRttZXsa+cv6a0JWV/v9bXzOJ/daQt4fxKDuPvv6w4/f7PMqT8j3AC/neBo/l/KBBjDzhWkn0fOO6Y7gV37W0bZvH/L0b7x1Cd/WQOs//jC//nyv9pWoD/XeDG/99VgagmYGwAupTs3a/Dwfq3M4v/d7TpRXg1h9H/aX7+/1/5P8GZXAL/O8CN/7+qAjF6X5eRvfd1OHgfAAAAAAAAAADAjj85mSqvACgAAA==
 ```
-
+<!-- editorconfig-checker-enable-max-line-length -->
 Using this value with [the example above](#run) will pick up three schema files:
+
 - [test_schema.avsc][51]
 - [test_schema_more.avro][52]
 - [subfolder/test_schema_too.json][53]
@@ -195,12 +200,24 @@ Push schemas to Red Hat's Service Registry
 > The *dev* profile will turn off enforcing and coverage checks.</br>
 > The *cov* profile will create a *Jacoco* html coverage report.
 
+### Linting locally
+
+```shell
+docker run --rm -e RUN_LOCAL=true -e IGNORE_GITIGNORED_FILES=true -e VALIDATE_BASH=true \
+-e VALIDATE_DOCKERFILE_HADOLINT=true -e VALIDATE_EDITORCONFIG=true -e VALIDATE_GITHUB_ACTIONS=true \
+-e VALIDATE_JAVA=true -e VALIDATE_JSON=true -e VALIDATE_MARKDOWN=true  -e VALIDATE_XML=true \
+-e VALIDATE_YAML=true -v ${PWD}:/tmp/lint ghcr.io/github/super-linter:slim-v4
+```
+
+> Note: not linting *Java* with this.
+
 ### CI
 
-| Workflow      | Trigger                                            | Description                                         |
-| ------------- | -------------------------------------------------- | --------------------------------------------------- |
-| [Build][62]   | manually : pull requests : push to the main branch | will build the project including the docker image   |
-| [Release][63] | push semver tags to the main branch                | will create a github release for the triggering tag |
+| Workflow           | Trigger                             | Description                                    |
+| ------------------ | ----------------------------------- | ---------------------------------------------- |
+| [Pull Request][62] | pull requests                       | lint and test the project                      |
+| [Release][63]      | push semver tags to the main branch | create a github release for the triggering tag |
+| [Stage][64]        | manually : push to the main branch  | build the project including the docker image   |
 
 ### Release process
 
@@ -243,6 +260,7 @@ this will automatically create a *GitHub Release* for the *1.2.3* tag with the t
 - [Red Hat AMQ][21]
 - [Red Hat Integration][22]
 
+<!-- editorconfig-checker-disable-max-line-length -->
 <!-- links -->
 [10]: https://www.redhat.com/en/technologies/cloud-computing/openshift/openshift-service-registry
 [11]: https://www.redhat.com/en/products/integration
@@ -272,5 +290,6 @@ this will automatically create a *GitHub Release* for the *1.2.3* tag with the t
 [59]: ../src/main/java/com/redhat/schema/pusher/MainApp.java
 [60]: ../src/main/java/com/redhat/schema/pusher/MainApp.java
 [61]: ../src/main/docker/Dockerfile
-[62]: workflows/build.yml
+[62]: workflows/pr.yml
 [63]: workflows/release.yml
+[64]: workflows/stage.yml
