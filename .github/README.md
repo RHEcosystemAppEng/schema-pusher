@@ -222,6 +222,11 @@ docker run --rm -e RUN_LOCAL=true -e IGNORE_GITIGNORED_FILES=true -e VALIDATE_BA
 ### Release process
 
 - Decide the desired version, i.e. *1.2.3* and version title, i.e. *new version title*.
+  > Tip: the following command will calculate the next `semver` based on git tags and conventional commits:
+  > 
+  > ```shell
+  > docker run --rm -it -v $PWD:/usr/share/repo tomerfi/version-bumper:latest | cut -d ' ' -f 1 | xargs
+  > ```
 - Set the desired release version, add, commit, and tag it (do not use *skip ci* for this commit):
 
   ```shell
