@@ -16,6 +16,11 @@ import org.springframework.context.annotation.Scope;
 @Configuration
 @ComponentScan(basePackages = "com.redhat.schema.pusher.avro", lazyInit = true)
 public class AvroBeansConfig {
+  /**
+   * Prototype Bean for creating a {@code org.apache.kafka.clients.producer.KafkaProducer} instance.
+   * @param producerProps the {@link Properties} instance to be used by the producer.
+   * @return the {@code org.apache.kafka.clients.producer.KafkaProducer} instance.
+   */
   @Bean
   @Scope(BeanDefinition.SCOPE_PROTOTYPE)
   public KafkaProducer<String, IndexedRecord> kafkaProducer(final Properties producerProps) {

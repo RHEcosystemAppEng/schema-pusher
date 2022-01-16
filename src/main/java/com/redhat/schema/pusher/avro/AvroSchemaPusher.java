@@ -61,7 +61,10 @@ public final class AvroSchemaPusher implements SchemaPusher {
     try (var producer = context.getBean(KafkaProducer.class, producerProps)) {
       topics.parallelStream().forEach(topic -> {
         LOGGER.info(
-          () -> String.format("parallel stream for topic '%s' running on thread '%s'", topic, Thread.currentThread().getName()));
+            () -> String.format(
+              "parallel stream for topic '%s' running on thread '%s'",
+              topic,
+              Thread.currentThread().getName()));
         schemas.stream().forEach(path -> {
           try {
             var parser = new Parser();
@@ -70,13 +73,17 @@ public final class AvroSchemaPusher implements SchemaPusher {
             var prodRec = new ProducerRecord<String, IndexedRecord>(topic, avroRec);
             producer.send(prodRec).get();
             LOGGER.info(
-              () -> String.format("successfully pushed '%s' to topic '%s'", path.toFile().getName(), topic));
+                () -> String.format(
+                  "successfully pushed '%s' to topic '%s'", path.toFile().getName(), topic));
           } catch (final  ExecutionException | InterruptedException | IOException exc) {
             if (exc instanceof InterruptedException) {
               Thread.currentThread().interrupt();
             }
             LOGGER.log(
-              Level.SEVERE, exc, () -> String.format("failed to push '%s' to topic '%s'", path.toFile().getName(), topic));
+                Level.SEVERE,
+                exc,
+                () -> String.format(
+                  "failed to push '%s' to topic '%s'", path.toFile().getName(), topic));
           }
         });
       });

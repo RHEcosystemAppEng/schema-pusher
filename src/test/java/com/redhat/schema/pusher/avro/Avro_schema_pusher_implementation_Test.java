@@ -1,3 +1,4 @@
+// editorconfig-checker-disable-max-line-length
 package com.redhat.schema.pusher.avro;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -32,7 +33,6 @@ import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.serialization.StringSerializer;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -42,6 +42,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationContext;
 
+/** Test cases for the AVRO schema pusher impelementation. */
 @ExtendWith(MockitoExtension.class)
 class Avro_schema_pusher_implementation_Test {
   private static final String FAKE_SECURED_BOOTSTRAP = "https://fake-kafka-bootstrap:443";
@@ -120,7 +121,7 @@ class Avro_schema_pusher_implementation_Test {
   @Test
   @SuppressWarnings("unchecked")
   void pushing_two_files_and_two_topics_should_result_in_four_producer_records_sent() throws URISyntaxException {
-        // stub the cli
+    // stub the cli
     when(mockCli.getKafkaBootstrap()).thenReturn(FAKE_NOT_SECURED_BOOTSTRAP);
     when(mockCli.getServiceRegistry()).thenReturn(FAKE_REGISTRY);
     when(mockCli.getNamingStrategy()).thenReturn(FAKE_NAMING_STRATEGY);
@@ -189,11 +190,11 @@ class Avro_schema_pusher_implementation_Test {
   private Predicate<ProducerRecord<String, IndexedRecord>> prodRecMatcher(
       final String topic, final String name) {
     return pr -> {
-        var schema = pr.value().getSchema();
-        return topic.equals(pr.topic())
-                && name.equals(schema.getName()) // namespace from the testing file
-                && "com.redhat.schema.pusher.avro.schemas".equals(schema.getNamespace());
-      };
+      var schema = pr.value().getSchema();
+      return topic.equals(pr.topic())
+              && name.equals(schema.getName()) // namespace from the testing file
+              && "com.redhat.schema.pusher.avro.schemas".equals(schema.getNamespace());
+    };
   }
 
   private Path getResourceAbsPath(final String resourceName) throws URISyntaxException {

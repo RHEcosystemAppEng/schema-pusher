@@ -1,8 +1,9 @@
+// editorconfig-checker-disable-max-line-length
 package com.redhat.schema.pusher;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.api.Assertions.assertThatNoException;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.BDDAssertions.then;
 import static org.assertj.core.api.BDDAssertions.thenExceptionOfType;
 import static org.assertj.core.api.BDDAssertions.thenNoException;
@@ -23,6 +24,7 @@ import picocli.CommandLine;
 import picocli.CommandLine.MissingParameterException;
 import picocli.CommandLine.ParameterException;
 
+/** Test cases for the push cli abstraction, namely the cli option and properties. */
 class Cli_options_and_utility_methods_Test {
   private static final String FAKE_BOOTSTRAP = "https://fake-kafka-bootstrap:443";
   private static final String FAKE_REGISTRY = "http://fake-redhat-service-registry";
@@ -96,8 +98,8 @@ class Cli_options_and_utility_methods_Test {
         "-d=" + FAKE_DIRECTORY);
     // then an exception should be thrown as this is not an acceptable configuration
     thenExceptionOfType(ParameterException.class)
-      .isThrownBy(() -> sut.validate())
-      .withMessage("For multiple topics, please use the default topic_record strategy.");
+        .isThrownBy(() -> sut.validate())
+        .withMessage("For multiple topics, please use the default topic_record strategy.");
   }
 
   @Test
@@ -192,7 +194,7 @@ class Cli_options_and_utility_methods_Test {
     then(filePaths).hasSize(3);
     // verify the file names
     var fileNames = filePaths.stream().map(Path::toFile).map(File::getName).toList();
-    assertThat(fileNames).containsExactlyInAnyOrder(
-      "test_schema.avsc", "test_schema_more.avro", "test_schema_too.json");
+    assertThat(fileNames)
+        .containsExactlyInAnyOrder("test_schema.avsc", "test_schema_more.avro", "test_schema_too.json");
   }
 }

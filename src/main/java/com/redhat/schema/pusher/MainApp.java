@@ -2,15 +2,21 @@ package com.redhat.schema.pusher;
 
 import static java.util.Objects.isNull;
 
+import com.redhat.schema.pusher.avro.AvroBeansConfig;
 import java.io.IOException;
 import java.util.logging.LogManager;
-import com.redhat.schema.pusher.avro.AvroBeansConfig;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import picocli.CommandLine;
 
 /** The main starting point of the application. */
 public final class MainApp {
-  private static final String DEFAULT_LOG_CONF = "com/redhat/schema/pusher/logging-default.properties";
+  private static final String DEFAULT_LOG_CONF =
+      "com/redhat/schema/pusher/logging-default.properties";
+
+  private MainApp() {
+    // a utility class needs no constructor
+  }
+
   /**
    * Creates a DI context, grabs the {@link PushCli} implementation and loads a
    * {@code picocli.CommandLine} instance.

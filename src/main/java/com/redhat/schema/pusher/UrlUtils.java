@@ -3,6 +3,7 @@ package com.redhat.schema.pusher;
 import java.util.function.UnaryOperator;
 
 /** Utility class for working with URL strings. */
+// CHECKSTYLE:OFF: ConstantName
 public final class UrlUtils {
   private static final String CONFLUENT_COMPAT_MAP_FMT = "%s/apis/ccompat/v6";
 
@@ -24,7 +25,7 @@ public final class UrlUtils {
    * @param url the url string.
    * @return true if the url start with 'https://'.
    */
-  public static final boolean isSecured(final String url) {
+  public static boolean isSecured(final String url) {
     return url.startsWith("https://");
   }
 }

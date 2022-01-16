@@ -38,6 +38,7 @@ public final class AvroCustomSerializer
   private boolean latestCompatStrict;
   private boolean avroReflectionAllowNull = false;
 
+  /** Public constructor required. */
   public AvroCustomSerializer() {
     //
   }
@@ -45,12 +46,6 @@ public final class AvroCustomSerializer
   /* *************************************************************************** *
    * Originated from {@code io.confluent.kafka.serializers.KafkaAvroSerializer}. *
    * *************************************************************************** */
-  @Override
-  public void configure(final Map<String, ?> configs, final boolean isKey) {
-    this.isKey = isKey;
-    configure(new KafkaAvroSerializerConfig(configs));
-  }
-
   @Override
   public byte[] serialize(final String topic, final Object object) {
     requireNonNull(object);
@@ -65,6 +60,12 @@ public final class AvroCustomSerializer
   @Override
   public void close() {
     //
+  }
+
+  @Override
+  public void configure(final Map<String, ?> configs, final boolean setIsKey) {
+    this.isKey = setIsKey;
+    configure(new KafkaAvroSerializerConfig(configs));
   }
 
   /* *********************************************************************************** *
@@ -85,6 +86,7 @@ public final class AvroCustomSerializer
   }
 
   // TODO the schema argument should be finalized
+  // CHECKSTYLE.OFF: FinalParameters
   private byte[] serializeImpl(final String subject, AvroSchema schema)
       throws SerializationException, InvalidConfigurationException {
     requireNonNull(schemaRegistry);
@@ -97,7 +99,8 @@ public final class AvroCustomSerializer
         id = schemaRegistry.register(subject, schema, normalizeSchema);
       } else if (useSchemaId >= 0) {
         restClientErrorMsg = "Error retrieving schema ID";
-        schema = (AvroSchema) lookupSchemaBySubjectAndId(subject, useSchemaId, schema, idCompatStrict);
+        schema = (AvroSchema) lookupSchemaBySubjectAndId(
+          subject, useSchemaId, schema, idCompatStrict);
         id = schemaRegistry.getId(subject, schema);
       } else if (useLatestVersion) {
         restClientErrorMsg = "Error retrieving latest version of Avro schema";
