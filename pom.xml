@@ -4,7 +4,7 @@
 
   <groupId>com.redhat.schema.pusher</groupId>
   <artifactId>schema-pusher</artifactId>
-  <version>0.1.2-SNAPSHOT</version>
+  <version>0.2.0</version>
   <packaging>jar</packaging>
   <name>Schema Pusher</name>
   <description>Application for pushing schemas to Red Hat's Service Registry</description>
