@@ -47,6 +47,7 @@ import org.springframework.context.ApplicationContext;
 class Avro_schema_pusher_implementation_Test {
   private static final String FAKE_SECURED_BOOTSTRAP = "https://fake-kafka-bootstrap:443";
   private static final String FAKE_NOT_SECURED_BOOTSTRAP = "http://fake-kafka-bootstrap/";
+  private static final String FAKE_NOT_SECURED_BOOTSTRAP_CLEAN = "http://fake-kafka-bootstrap";
   private static final String FAKE_REGISTRY = "http://fake-redhat-service-registry/";
   private static final NamingStrategy FAKE_NAMING_STRATEGY = NamingStrategy.TOPIC_RECORD;
   private static final String FAKE_TOPIC1 = "faketopic";
@@ -160,7 +161,7 @@ class Avro_schema_pusher_implementation_Test {
   }
 
   private ArgumentMatcher<Properties> securedPropertiesMatcher =
-      p -> FAKE_SECURED_BOOTSTRAP.equals(p.getProperty("bootstrap.servers"))
+      p -> FAKE_NOT_SECURED_BOOTSTRAP_CLEAN.equals(p.getProperty("bootstrap.servers"))
             && (FAKE_REGISTRY + "apis/ccompat/v6").equals(p.getProperty("schema.registry.url"))
             && "SSL".equals(p.getProperty("security.protocol"))
             && "all".equals(p.getProperty("acks"))
@@ -169,7 +170,7 @@ class Avro_schema_pusher_implementation_Test {
             && FAKE_NAMING_STRATEGY.getStrategy().equals(p.get("value.subject.name.strategy"));
 
   private ArgumentMatcher<Properties> notSecuredPropertiesMatcher =
-      p -> FAKE_NOT_SECURED_BOOTSTRAP.equals(p.getProperty("bootstrap.servers"))
+      p -> FAKE_NOT_SECURED_BOOTSTRAP_CLEAN.equals(p.getProperty("bootstrap.servers"))
             && (FAKE_REGISTRY + "apis/ccompat/v6").equals(p.getProperty("schema.registry.url"))
             && "all".equals(p.getProperty("acks"))
             && 0 == (int) p.get("retries")
