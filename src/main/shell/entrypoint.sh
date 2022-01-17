@@ -129,4 +129,5 @@ ret_code=$(eval "$java_cmd")
 rm -r $dest_dir
 
 # exit with the java app's return code
-exit "$ret_code"
+# shellcheck disable=SC2086
+exit $ret_code
