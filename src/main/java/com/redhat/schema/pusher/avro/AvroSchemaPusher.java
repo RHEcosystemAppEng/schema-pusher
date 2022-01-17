@@ -103,7 +103,7 @@ public final class AvroSchemaPusher implements SchemaPusher {
    */
   private Properties createProps(final PushCli cli) {
     // get info from the cli
-    var kafkaBootstrapUrl = cli.getKafkaBootstrap();
+    var kafkaBootstrapUrl = cleanUrlEnd.apply(cli.getKafkaBootstrap());
     var registryUrl = cleanUrlEnd.andThen(concatConfluentMap).apply(cli.getServiceRegistry());
     var namingStrategy = cli.getNamingStrategy();
     var selfSignedInfo = cli.getSelfSignedInfo();
