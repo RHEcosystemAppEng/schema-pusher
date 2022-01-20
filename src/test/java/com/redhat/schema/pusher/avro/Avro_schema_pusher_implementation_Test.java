@@ -17,7 +17,8 @@ import static org.springframework.test.util.ReflectionTestUtils.setField;
 
 import com.redhat.schema.pusher.NamingStrategy;
 import com.redhat.schema.pusher.PushCli;
-import com.redhat.schema.pusher.PushCli.SelfSignedInfo;
+import com.redhat.schema.pusher.PushCli.KeystoreInfo;
+import com.redhat.schema.pusher.PushCli.TruststoreInfo;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -52,8 +53,10 @@ class Avro_schema_pusher_implementation_Test {
   private static final NamingStrategy FAKE_NAMING_STRATEGY = NamingStrategy.TOPIC_RECORD;
   private static final String FAKE_TOPIC1 = "faketopic";
   private static final String FAKE_TOPIC2 = "anotherfaketopic";
-  private static final String FAKE_TRUSTSTORE_JKS_PATH = "/path/to/truststore.jks";
+  private static final String FAKE_TRUSTSTORE_FILE = "/path/to/truststore.p12";
   private static final String FAKE_TRUSTSTORE_PASSWORD = "hideme123#@!";
+  private static final String FAKE_KEYSTORE_FILE = "/path/to/keystore.p12";
+  private static final String FAKE_KEYSTORE_PASSWORD = "hidemetoo123#@!";
 
   @Captor private ArgumentCaptor<ProducerRecord<String, IndexedRecord>> prodRecCaptore;
   @Mock private KafkaProducer<String, IndexedRecord> mockProducer;
@@ -90,15 +93,20 @@ class Avro_schema_pusher_implementation_Test {
   @Test
   @SuppressWarnings("unchecked")
   void pushing_one_file_and_one_topic_should_result_in_one_producer_records_sent(
-      @Mock final SelfSignedInfo mockSelfSignedInfo) throws URISyntaxException {
-    // stub the self signed info
-    given(mockSelfSignedInfo.getTruststoreJksPath()).willReturn(FAKE_TRUSTSTORE_JKS_PATH);
-    given(mockSelfSignedInfo.getTruststorePassword()).willReturn(FAKE_TRUSTSTORE_PASSWORD);
+      @Mock final TruststoreInfo mockTruststoreInfo,
+      @Mock final KeystoreInfo mockKeystoreInfo) throws URISyntaxException {
+    // stub the truststore info
+    given(mockTruststoreInfo.getTruststoreFile()).willReturn(FAKE_TRUSTSTORE_FILE);
+    given(mockTruststoreInfo.getTruststorePassword()).willReturn(FAKE_TRUSTSTORE_PASSWORD);
+    // stub the keystore info
+    given(mockKeystoreInfo.getKeystoreFile()).willReturn(FAKE_KEYSTORE_FILE);
+    given(mockKeystoreInfo.getKeystorePassword()).willReturn(FAKE_KEYSTORE_PASSWORD);
     // stub the cli
     given(mockCli.getKafkaBootstrap()).willReturn(FAKE_SECURED_BOOTSTRAP);
     given(mockCli.getServiceRegistry()).willReturn(FAKE_REGISTRY);
     given(mockCli.getNamingStrategy()).willReturn(FAKE_NAMING_STRATEGY);
-    given(mockCli.getSelfSignedInfo()).willReturn(mockSelfSignedInfo);
+    given(mockCli.getTruststoreInfo()).willReturn(mockTruststoreInfo);
+    given(mockCli.getKeystoreInfo()).willReturn(mockKeystoreInfo);
     // instantiate the sut with the fake info
     sut = new AvroSchemaPusher(mockCli);
     // turn off the sut's logger to avoid polluting the build log
@@ -185,8 +193,12 @@ class Avro_schema_pusher_implementation_Test {
             && 0 == (int) p.get("retries")
             && StringSerializer.class.equals(p.get("key.serializer"))
             && FAKE_NAMING_STRATEGY.getStrategy().equals(p.get("value.subject.name.strategy"))
-            && FAKE_TRUSTSTORE_JKS_PATH.equals(p.getProperty("ssl.truststore.location"))
-            && FAKE_TRUSTSTORE_PASSWORD.equals(p.getProperty("ssl.truststore.password"));
+            && FAKE_TRUSTSTORE_FILE.equals(p.getProperty("ssl.truststore.location"))
+            && FAKE_TRUSTSTORE_PASSWORD.equals(p.getProperty("ssl.truststore.password"))
+            && "PKCS12".equals(p.getProperty("ssl.truststore.type"))
+            && FAKE_KEYSTORE_FILE.equals(p.getProperty("ssl.keystore.location"))
+            && FAKE_KEYSTORE_PASSWORD.equals(p.getProperty("ssl.keystore.password"))
+            && "PKCS12".equals(p.getProperty("ssl.keystore.type"));
 
   private Predicate<ProducerRecord<String, IndexedRecord>> prodRecMatcher(
       final String topic, final String name) {

@@ -41,6 +41,8 @@ import org.springframework.stereotype.Component;
 public final class AvroSchemaPusher implements SchemaPusher {
   private static final Logger LOGGER = Logger.getLogger(AvroSchemaPusher.class.getName());
 
+  private static final String STORE_TYPE_PKCS12 = "PKCS12";
+
   @Autowired private ApplicationContext context;
   private final Properties producerProps;
 
@@ -106,7 +108,8 @@ public final class AvroSchemaPusher implements SchemaPusher {
     var kafkaBootstrapUrl = cleanUrlEnd.apply(cli.getKafkaBootstrap());
     var registryUrl = cleanUrlEnd.andThen(concatConfluentMap).apply(cli.getServiceRegistry());
     var namingStrategy = cli.getNamingStrategy();
-    var selfSignedInfo = cli.getSelfSignedInfo();
+    var truststoreInfo = cli.getTruststoreInfo();
+    var keystoreInfo = cli.getKeystoreInfo();
     // create, populate, and return the properties instance
     var props = new Properties();
     // set the kafka bootstrap and rh service registry urls
@@ -121,20 +124,32 @@ public final class AvroSchemaPusher implements SchemaPusher {
     // set selected naming strategy
     props.put(
         AbstractKafkaSchemaSerDeConfig.VALUE_SUBJECT_NAME_STRATEGY, namingStrategy.getStrategy());
-    // if the bootstrap server is secured (standard for amq)
+    // if the bootstrap server is secured
     if (isSecured(kafkaBootstrapUrl)) {
       // set SSL as the protocol
       props.put(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, "SSL");
-      // if supplied truststore and password
-      if (nonNull(selfSignedInfo)) {
-        var kafkaTruststorePath = cli.getSelfSignedInfo().getTruststoreJksPath();
-        var kafkaTruststorePassword = cli.getSelfSignedInfo().getTruststorePassword();
-        if (nonNull(kafkaTruststorePath) && nonNull(kafkaTruststorePassword)) {
-          props.put(SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG, kafkaTruststorePath);
-          props.put(SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG, kafkaTruststorePassword);
+      // if supplied truststore info
+      if (nonNull(truststoreInfo)) {
+        var truststoreFile = truststoreInfo.getTruststoreFile();
+        var truststorePassword = truststoreInfo.getTruststorePassword();
+        if (nonNull(truststoreFile) && nonNull(truststorePassword)) {
+          // set truststore configuration
+          props.put(SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG, truststoreFile);
+          props.put(SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG, truststorePassword);
+          props.put(SslConfigs.SSL_TRUSTSTORE_TYPE_CONFIG, STORE_TYPE_PKCS12);
         }
       }
-
+      // if supplied keystore info
+      if (nonNull(keystoreInfo)) {
+        var keystoreFile = keystoreInfo.getKeystoreFile();
+        var keystorePassword = keystoreInfo.getKeystorePassword();
+        if (nonNull(keystoreFile) && nonNull(keystorePassword)) {
+          // set keystore configuration
+          props.put(SslConfigs.SSL_KEYSTORE_LOCATION_CONFIG, keystoreFile);
+          props.put(SslConfigs.SSL_KEYSTORE_PASSWORD_CONFIG, keystorePassword);
+          props.put(SslConfigs.SSL_KEYSTORE_TYPE_CONFIG, STORE_TYPE_PKCS12);
+        }
+      }
     }
     return props;
   }

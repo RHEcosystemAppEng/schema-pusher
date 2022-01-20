@@ -48,7 +48,10 @@ public abstract class PushCli implements Callable<Integer> {
   private List<TopicAggregator> topicAggregators;
 
   @ArgGroup(exclusive = false, multiplicity = "0..1")
-  private SelfSignedInfo selfSignedInfo;
+  private TruststoreInfo truststoreInfo;
+
+  @ArgGroup(exclusive = false, multiplicity = "0..1")
+  private KeystoreInfo keystoreInfo;
 
   /** Use for aggregating topics specified by the user. */
   public static final class TopicAggregator {
@@ -67,26 +70,26 @@ public abstract class PushCli implements Callable<Integer> {
     }
   }
 
-  /** Use for binding the truststore path and password keys. */
-  public static final class SelfSignedInfo {
+  /** Use for binding the truststore pkcs12 path and password keys. */
+  public static final class TruststoreInfo {
     @Option(
-        names = {"-j", "--truststore-jks-path"},
-        description = "The path for the truststore jks file for use with the Kafka producer",
+        names = {"--tf", "--truststore-file"},
+        description = "The path for the truststore pkcs12 file for use with the Kafka producer",
         required = true)
-    private String truststoreJksPath;
+    private String truststoreFile;
 
     @Option(
-        names = {"-p", "--truststore-password"},
-        description = "The password for the truststore jks file for use with the Kafka producer",
+        names = {"--tp", "--truststore-password"},
+        description = "The password for the truststore pkcs12 file for use with the Kafka producer",
         required = true)
     private String truststorePassword;
 
     /**
-     * Returns the truststore jks path.
-     * @return the truststore jks path.
+     * Returns the truststore file path.
+     * @return the truststore file path.
      */
-    public String getTruststoreJksPath() {
-      return this.truststoreJksPath;
+    public String getTruststoreFile() {
+      return this.truststoreFile;
     }
 
     /**
@@ -95,6 +98,37 @@ public abstract class PushCli implements Callable<Integer> {
      */
     public String getTruststorePassword() {
       return this.truststorePassword;
+    }
+  }
+
+  /** Use for binding the keystore pkcs12 path and password keys. */
+  public static final class KeystoreInfo {
+    @Option(
+        names = {"--kf", "--keystore-file"},
+        description = "The path for the keystore pkcs12 file for use with the Kafka producer",
+        required = true)
+    private String keystoreFile;
+
+    @Option(
+        names = {"--kp", "--keystore-password"},
+        description = "The password for the keystore pkcs12 file for use with the Kafka producer",
+        required = true)
+    private String keystorePassword;
+
+    /**
+     * Returns the keystore file path.
+     * @return the keystore file path.
+     */
+    public String getKeystoreFile() {
+      return this.keystoreFile;
+    }
+
+    /**
+     * Returns the keystore password.
+     * @return the keystore password.
+     */
+    public String getKeystorePassword() {
+      return this.keystorePassword;
     }
   }
 
@@ -189,11 +223,20 @@ public abstract class PushCli implements Callable<Integer> {
   }
 
   /**
-   * Get the self-signed information as specified by the user.
+   * Get the truststore pkcs12 information as specified by the user.
    *
-   * @return a {@link SelfSingedInfo} instance.
+   * @return a {@link TruststoreInfo} instance.
    */
-  public SelfSignedInfo getSelfSignedInfo() {
-    return this.selfSignedInfo;
+  public TruststoreInfo getTruststoreInfo() {
+    return this.truststoreInfo;
+  }
+
+  /**
+   * Get the keystore pkcs12 information as specified by the user.
+   *
+   * @return a {@link KeystoreInfo} instance.
+   */
+  public KeystoreInfo getKeystoreInfo() {
+    return this.keystoreInfo;
   }
 }
