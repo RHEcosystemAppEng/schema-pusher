@@ -14,13 +14,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Properties;
-import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.avro.Schema.Parser;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.IndexedRecord;
 import org.apache.kafka.clients.CommonClientConfigs;
+import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -73,19 +73,14 @@ public final class AvroSchemaPusher implements SchemaPusher {
             var schema = parser.parse(Files.newInputStream(path));
             var avroRec = new GenericData.Record(schema);
             var prodRec = new ProducerRecord<String, IndexedRecord>(topic, avroRec);
-            producer.send(prodRec).get();
-            LOGGER.info(
-                () -> String.format(
-                  "successfully pushed '%s' to topic '%s'", path.toFile().getName(), topic));
-          } catch (final  ExecutionException | InterruptedException | IOException exc) {
-            if (exc instanceof InterruptedException) {
-              Thread.currentThread().interrupt();
-            }
+            var callback = context.getBean(Callback.class, LOGGER, path.toFile().getName(), topic);
+            producer.send(prodRec, callback);
+          } catch (final IOException exc) {
+            var fileName = path.toFile().getName();
             LOGGER.log(
                 Level.SEVERE,
                 exc,
-                () -> String.format(
-                  "failed to push '%s' to topic '%s'", path.toFile().getName(), topic));
+                () -> String.format("failed to push '%s' to topic '%s'", fileName, topic));
           }
         });
       });

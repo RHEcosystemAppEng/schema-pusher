@@ -42,7 +42,8 @@ quay.io/ecosystem-appeng/schema-pusher:latest \
 > Note, when producing messages to multiple topics, only the *topic_record* strategy is allowed.</br>
 > </br>
 > If you use a self-signed certificate for your *kafka* deployment, you can use the optional *--truststore*
-> and *truststorePassword* parameters to pass the *pkcs12 truststore* file and related password of the *kakfa cluster*.</br>
+> and *truststorePassword* parameters to pass the *pkcs12 truststore* file and related password of the *kakfa
+> cluster*.</br>
 > If your *kafka* deployment require authentication, you can use the optional *--keystore* and *--keystorePassword*
 > to pass the the *pkcs12 keystore* file and related password of the *kakfa user*.</br>
 > </br>
@@ -66,7 +67,7 @@ docker run --rm -it quay.io/ecosystem-appeng/schema-pusher:latest --help
 ```
 
 prints:
-
+<!-- editorconfig-checker-disable-max-line-length -->
 ```text
 Tool for decoding and extracting base64 tar.gz archive containing schema files.
 The schema files will be pushed to Red Hat's service registry via the attached Java application.
@@ -103,7 +104,7 @@ archive contains 2 schema files, then 6 schemas will be pushed, one per each top
 Please note, multiple topics are only supported with the 'topic_record' naming strategy, the
 other strategies ('topic' and 'record') will result in messages overwriting eachother.
 ```
-
+<!-- editorconfig-checker-enable-max-line-length -->
 ## Example usage
 
 The following is a *base64* representation of a *tar.gz* archive containing [these testing resources][50].</br>
