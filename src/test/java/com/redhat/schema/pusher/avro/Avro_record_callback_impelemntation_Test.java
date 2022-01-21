@@ -14,6 +14,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+/** Test cases for the custom record callback. */
 @ExtendWith(MockitoExtension.class)
 class Avro_record_callback_impelemntation_Test {
   private static final String FAKE_TOPIC = "faketopic";
