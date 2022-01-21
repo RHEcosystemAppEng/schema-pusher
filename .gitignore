@@ -27,10 +27,6 @@ target
 *.cache
 
 # Project specific
-*truststore.jks
-*.env
 test-registry-rest-api.http
-.notes
 pom.xml.versionsBackup
-ca.crt
 certs/

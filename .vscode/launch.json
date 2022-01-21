@@ -1,5 +1,27 @@
 {
-  "version": "0.2.0",
+  "version": "0.2.1",
+  "inputs": [
+    {
+      "id": "truststore_password",
+      "type": "command",
+      "command": "shellCommand.execute",
+      "args":{
+        "command": "cat certs/ca.password",
+        "cwd": "${workspaceFolder}",
+        "useSingleResult": true
+      }
+    },
+    {
+      "id": "keystore_password",
+      "type": "command",
+      "command": "shellCommand.execute",
+      "args":{
+        "command": "cat certs/user.password",
+        "cwd": "${workspaceFolder}",
+        "useSingleResult": true
+      }
+    }
+  ],
   "configurations": [
     {
       "type": "java",
@@ -14,8 +36,10 @@
         "--topic=topic1",
         "--topic=anothertopic1",
         "--directory=${workspaceFolder}/src/test/resources/com/redhat/schema/pusher/avro/schemas/",
-        "--truststore-jks-path=${workspaceFolder}/truststore.jks",
-        "--truststore-password=password"
+        "--truststore-file=${workspaceFolder}/certs/ca.p12",
+        "--truststore-password=${input:truststore_password}",
+        "--keystore-file=${workspaceFolder}/certs/user.p12",
+        "--keystore-password=${input:keystore_password}"
       ]
     }
   ]

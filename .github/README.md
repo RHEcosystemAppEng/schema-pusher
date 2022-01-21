@@ -33,18 +33,29 @@ quay.io/ecosystem-appeng/schema-pusher:latest \
 --strategy topic_record \
 --topic topic1 --topic anothertopic1 --topic onemoretopic1 \
 --content $(base64 -w 0 schema_files.tar.gz) \
---certificate $(base64 -w 0 kafka_bootstrap_ca.crt)
+--truststore $(base64 -w 0 kafka_cluster_ca.p12) \
+--truststorePassword $(cat kafka_cluster_ca.password) \
+--keystore $(base64 -w 0 kafka_user.p12) \
+--keystorePassword $(cat kafka_user.password)
 ```
 
 > Note, when producing messages to multiple topics, only the *topic_record* strategy is allowed.</br>
 > </br>
-> Also Note, for *AMQ Streams*, the bootstrap route is probably a secured one,</br>
-> if you use a self-signed certificate, you can use the optional *--certificate* parameter to pass a it as *base64*
-> encoded.</br>
-> You can get the certificate from you deployment's scerets, look for the `*cluster-ca-cert` secret:
+> If you use a self-signed certificate for your *kafka* deployment, you can use the optional *--truststore*
+> and *truststorePassword* parameters to pass the *pkcs12 truststore* file and related password of the *kakfa
+> cluster*.</br>
+> If your *kafka* deployment require authentication, you can use the optional *--keystore* and *--keystorePassword*
+> to pass the the *pkcs12 keystore* file and related password of the *kakfa user*.</br>
+> </br>
+> You can follow [this][24] and grab the relevant *pkcs12* and password,
+> replace *USER_SECRET_NAME* with the user secret name,
+> repalce *CLUSTER_CA_SECRET_NAME* with the cluster ca name (usally ends with *cluster-ca-cert*):
 >
 > ```shell
-> oc extract secret/my-kafka-cluster-ca-cert --keys=ca.crt --to=- > kafka_bootstrap_ca.crt
+> oc get secret CLUSTER_CA_SECRET_NAME -o jsonpath='{.data.ca\.p12}' | base64 -d > kafka_cluster_ca.p12
+> oc get secret CLUSTER_CA_SECRET_NAME -o jsonpath='{.data.ca\.password}' | base64 -d > kafka_cluster_ca.password
+> oc get secret USER_SECRET_NAME -o jsonpath='{.data.user\.p12}' | base64 -d > kafka_user.p12
+> oc get secret USER_SECRET_NAME -o jsonpath='{.data.user\.password}' | base64 -d > kakfa_user.password
 > ```
 
 ## Get help
@@ -56,7 +67,7 @@ docker run --rm -it quay.io/ecosystem-appeng/schema-pusher:latest --help
 ```
 
 prints:
-
+<!-- editorconfig-checker-disable-max-line-length -->
 ```text
 Tool for decoding and extracting base64 tar.gz archive containing schema files.
 The schema files will be pushed to Red Hat's service registry via the attached Java application.
@@ -67,16 +78,22 @@ Usage: [options]
 Options:
 --bootstrap, (mandatory) kafka bootstrap url.
 --registry, (mandatory) service registry url.
---strategy, (optional) subject naming strategy, [topic, record, topic_record] (default: topic_record).
+--strategy, (optional) subject naming strategy, [topic record topic_record] (default: topic_record).
 --topic (mandatory), topic/s to push the schemas to (repeatable).
 --content, (mandatory) base64 encoded 'tar.gz' archive containing the schema files.
---certificate, (optional) base64 encoded certificate for using with the bootstrap.
+--truststore, (optional) base64 encoded pkcs12 truststore for identifying the bootstrap (inclusive with truststorePassword).
+--truststorePassword (optional) password for accessing the pkcs12 truststore (inclusive with truststore).
+--keystore, (optional) base64 encoded pkcs12 keystore for identifying to the bootstrap (inclusive with keystorePassword).
+--keystorePassword (optional) password for accessing the pkcs12 keystore (inclusive with keystore).
 
 Example:
 --bootstrap https://kafka-bootstrap-url:443 --registry http://service-registry-url:8080 \
 --strategy topic_record --topic sometopic --topic anothertopic --topic onemoretopic \
---content $(base64 -w 0 schema_files.tar.gz)
---certificate $(base64 -w 0 kafka_bootstrap_ca.cert)
+--content $(base64 -w 0 schema_files.tar.gz) \
+--truststore $(base64 -w 0 kafka_cluster_ca.p12) \
+--truststorePassword secretTruststorePassword \
+--keystore $(base64 -w 0 kafka_user_ca.p12) \
+--keystorePassword secretKeystorePassword
 
 This should result in extracting the tar.gz archive decoded from the content parameter's value,
 the extracted schema files will be pushed to kafka/registry instance using the specified subject
@@ -87,7 +104,7 @@ archive contains 2 schema files, then 6 schemas will be pushed, one per each top
 Please note, multiple topics are only supported with the 'topic_record' naming strategy, the
 other strategies ('topic' and 'record') will result in messages overwriting eachother.
 ```
-
+<!-- editorconfig-checker-enable-max-line-length -->
 ## Example usage
 
 The following is a *base64* representation of a *tar.gz* archive containing [these testing resources][50].</br>
@@ -137,9 +154,9 @@ This application is constructed of three layers:
 
 You can invoke the *Java* application directly,</br>
 keep in mind that the app takes a directory of schema files and not an encoded base64 value,</br>
-as well as a jks path and literal password instead of an encoded certificate.</br>
-The *Shell* script is the component in charge of decoding and extracting the archive,</br>
-as well as creating the truststore prior to invoking the *Java* app.</br>
+as well as the actual path of the pkcs12 files and literal passwords.</br>
+The *Shell* script is the component in charge of decoding, extracting and preparing the arguments for invoking
+the *Java* app.</br>
 
 > Note that this form of execution requires an application build.
 
@@ -149,8 +166,10 @@ java -jar target/schema-pusher-jar-with-dependencies.jar \
 -r=http://<service-registry-route-url-goes-here> \
 -t=topic1 -t=anothertopic1 -t=onemoretopic1 \
 -d=src/test/resources/com/redhat/schema/pusher/avro/schemas/ \
--j=./truststore.jks \
--p=password
+--tf=certs/ca.p12 \
+--tp=secretClusterCaPKCS12password \
+--kf=certs/user.p12 \
+--kp=secretUserPKCS12password
 ```
 
 > Note that the *topic_record* strategy is the default one used if none is specified.
@@ -166,25 +185,32 @@ prints:
 ```text
 Usage: <main class> [-hV] -b=<kafkaBootstrap> -d=<directory>
                     [-n=<namingStrategy>] -r=<serviceRegistry> (-t=<topic>)...
-                    [-j=<truststoreJksPath> -p=<truststorePassword>]
+                    [--tf=<truststoreFile> --tp=<truststorePassword>]
+                    [--kf=<keystoreFile> --kp=<keystorePassword>]
 Push schemas to Red Hat's Service Registry
   -b, --bootstrap-url=<kafkaBootstrap>
                         The url for Kafka's bootstrap server.
   -d, --directory=<directory>
                         The path of the directory containing the schema files.
   -h, --help            Show this help message and exit.
-  -j, --truststore-jks-path=<truststoreJksPath>
-                        The path for the truststore jks file for use with the
+      --kf, --keystore-file=<keystoreFile>
+                        The path for the keystore pkcs12 file for use with the
                           Kafka producer
+      --kp, --keystore-password=<keystorePassword>
+                        The password for the keystore pkcs12 file for use with
+                          the Kafka producer
   -n, --naming-strategy=<namingStrategy>
                         The subject naming strategy.
-  -p, --truststore-password=<truststorePassword>
-                        The password for the truststore jks file for use with
-                          the Kafka producer
   -r, --registry-url=<serviceRegistry>
                         The url for Red Hat's service registry.
   -t, --topic=<topic>   The topic to produce the message too, repeatable.
-  -V, --version         Print version information and exit.
+      --tf, --truststore-file=<truststoreFile>
+                        The path for the truststore pkcs12 file for use with
+                          the Kafka producer
+      --tp, --truststore-password=<truststorePassword>
+                        The password for the truststore pkcs12 file for use
+                          with the Kafka producer
+  -V, --version         Print version information and exitPKCS
 ```
 
 ### Usefull build commands
@@ -200,7 +226,7 @@ Push schemas to Red Hat's Service Registry
 > The *dev* profile will turn off enforcing and coverage checks.</br>
 > The *cov* profile will create a *Jacoco* html coverage report.
 
-### Linting locally
+## Linting locally
 
 ```shell
 docker run --rm -e RUN_LOCAL=true -e IGNORE_GITIGNORED_FILES=true -e VALIDATE_BASH=true \
@@ -220,7 +246,7 @@ docker run --rm -e RUN_LOCAL=true -e IGNORE_GITIGNORED_FILES=true -e VALIDATE_BA
 ### Release process
 
 - Decide the desired version, i.e. *1.2.3* and version title, i.e. *new version title*.
-  > Tip: the following command will calculate the next `semver` based on git tags and conventional commits:
+  > Tip: the following command will predict the next `semver` based on git tags and conventional commits:
   >
   > ```shell
   > docker run --rm -it -v $PWD:/usr/share/repo tomerfi/version-bumper:latest | cut -d ' ' -f 1 | xargs
@@ -280,6 +306,7 @@ this will automatically create a *GitHub Release* for the *1.2.3* tag with the t
 [21]: https://access.redhat.com/products/red-hat-amq/
 [22]: https://access.redhat.com/products/red-hat-integration
 [23]: https://www.redhat.com/en/topics/integration/what-is-a-service-registry
+[24]: https://access.redhat.com/documentation/en-us/red_hat_amq/2021.q3/html-single/deploying_and_upgrading_amq_streams_on_openshift/index#setup-external-clients-str
 
 <!-- relative paths -->
 [50]: ../src/test/resources/com/redhat/schema/pusher/avro/schemas

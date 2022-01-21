@@ -26,7 +26,6 @@
     <extra-enforcer-rules.version>1.5.1</extra-enforcer-rules.version>
     <jkube.version>1.5.1</jkube.version>
     <junit-jupiter.version>5.8.2</junit-jupiter.version>
-    <junit-pioneer.version>1.5.0</junit-pioneer.version>
     <kafka.version>7.0.1-ce</kafka.version>
     <kafka-avro-serializer.version>7.0.1</kafka-avro-serializer.version>
     <mockito.version>4.2.0</mockito.version>
@@ -128,11 +127,6 @@
         <groupId>org.junit.jupiter</groupId>
         <artifactId>junit-jupiter-params</artifactId>
         <version>${junit-jupiter.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.junit-pioneer</groupId>
-        <artifactId>junit-pioneer</artifactId>
-        <version>${junit-pioneer.version}</version>
       </dependency>
       <dependency>
         <groupId>org.mockito</groupId>
@@ -258,11 +252,6 @@
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-params</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.junit-pioneer</groupId>
-      <artifactId>junit-pioneer</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>

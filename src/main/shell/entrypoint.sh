@@ -17,13 +17,19 @@ show_usage() {
   echo "--strategy, (optional) subject naming strategy, [${naming_strategies[*]}] (default: topic_record)."
   echo "--topic (mandatory), topic/s to push the schemas to (repeatable)."
   echo "--content, (mandatory) base64 encoded 'tar.gz' archive containing the schema files."
-  echo "--certificate, (optional) base64 encoded certificate for using with the bootstrap."
+  echo "--truststore, (optional) base64 encoded pkcs12 truststore for identifying the bootstrap (inclusive with truststorePassword)."
+  echo "--truststorePassword (optional) password for accessing the pkcs12 truststore (inclusive with truststore)."
+  echo "--keystore, (optional) base64 encoded pkcs12 keystore for identifying to the bootstrap (inclusive with keystorePassword)."
+  echo "--keystorePassword (optional) password for accessing the pkcs12 keystore (inclusive with keystore)."
   echo ""
   echo "Example:"
   echo "--bootstrap https://kafka-bootstrap-url:443 --registry http://service-registry-url:8080 \\"
   echo "--strategy topic_record --topic sometopic --topic anothertopic --topic onemoretopic \\"
-  echo "--content \$(base64 -w 0 schema_files.tar.gz)"
-  echo "--certificate \$(base64 -w 0 kafka_bootstrap_ca.cert)"
+  echo "--content \$(base64 -w 0 schema_files.tar.gz) \\"
+  echo "--truststore \$(base64 -w 0 kafka_cluster_ca.p12) \\"
+  echo "--truststorePassword secretTruststorePassword \\"
+  echo "--keystore \$(base64 -w 0 kafka_user_ca.p12) \\"
+  echo "--keystorePassword secretKeystorePassword"
   echo ""
   echo "This should result in extracting the tar.gz archive decoded from the content parameter's value,"
   echo "the extracted schema files will be pushed to kafka/registry instance using the specified subject"
@@ -90,9 +96,11 @@ if [ "${#topics[@]}" -gt 1 ] && [[ "$strategy" != "topic_record" ]]; then
   exit 1
 fi
 
-# destination directory for loading schemas
+# create directory structure
 dest_dir=tmp_schemas
+certs_dir=certs
 mkdir $dest_dir
+mkdir $certs_dir
 
 # decode the the tar.gz archive and extract it's content
 echo "$content" | base64 --decode - | tar -C $dest_dir -xz
@@ -107,19 +115,20 @@ do
   java_cmd+=" --topic=$topic"
 done
 
-# if provided certificate for the bootstrap, create a truststore and add it to the java command
-if [[ -v certificate ]]; then
-  # create certificate destination directory
-  cert_dir=certs
-  mkdir $cert_dir
-  # decode the certificate
-  echo "$certificate" | base64 --decode - > $cert_dir/ca-cert.crt
-  # create a random password for using with the truststore
-  jkspass=$(echo $RANDOM | md5sum | head -c 20)
-  # create the truststore from the decoded certicate using the randon password
-  keytool -import -trustcacerts -noprompt -alias root -file $cert_dir/ca-cert.crt -keystore $cert_dir/truststore.jks -storepass "$jkspass"
-  # append the jks path and password to the java command
-  java_cmd+=" --truststore-jks-path=$cert_dir/truststore.jks --truststore-password=$jkspass"
+# if provided truststore and truststore password
+if [[ -v truststore ]] && [[ -v truststorePassword ]]; then
+  # decode truststore to p12 type file
+  echo "$truststore" | base64 --decode - > $certs_dir/truststore.p12
+  # append the related arguments to the java command
+  java_cmd+=" --truststore-file=$certs_dir/truststore.p12 --truststore-password=$truststorePassword"
+fi
+
+# if provided keystore and keystore password
+if [[ -v keystore ]] && [[ -v keystorePassword ]]; then
+  # decode keystore to p12 type file
+  echo "$keystore" | base64 --decode - > $certs_dir/keystore.p12
+  # append the related arguments to the java command
+  java_cmd+=" --keystore-file=$certs_dir/keystore.p12 --keystore-password=$keystorePassword"
 fi
 
 # execute the java command
