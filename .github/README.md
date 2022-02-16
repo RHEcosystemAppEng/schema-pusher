@@ -98,6 +98,11 @@ This should result in each schema file being produced to its respective topic us
 ```
 <!-- editorconfig-checker-enable-max-line-length -->
 
+
+## Schema types
+
+Currently, we support [AVRO Schemas][16].
+
 ## Development
 
 ### Application walkthrough
