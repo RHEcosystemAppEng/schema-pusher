@@ -5,7 +5,7 @@ declare -a naming_strategies=("topic" "record" "topic_record")
 
 show_usage() {
   echo ""
-  echo "Tool for decoding and extracting base64 tar.gz archive containing schema files."
+  echo "Tool for decoding base64 schema files and procude kafka messages for the specified topics."
   echo "The schema files will be pushed to Red Hat's service registry via the attached Java application."
   echo "------------------------------------------------------------------------------------------------"
   echo "Usage: -h/--help"
@@ -15,8 +15,8 @@ show_usage() {
   echo "--bootstrap, (mandatory) kafka bootstrap url."
   echo "--registry, (mandatory) service registry url."
   echo "--strategy, (optional) subject naming strategy, [${naming_strategies[*]}] (default: topic_record)."
-  echo "--topic (mandatory), topic/s to push the schemas to (repeatable)."
-  echo "--content, (mandatory) base64 encoded 'tar.gz' archive containing the schema files."
+  echo "--topic (mandatory), topic/s to push the schemas to (repeatable in correlation with schema)."
+  echo "--schema, (mandatory) base64 encoded schema file (repeatable in correlation with topic)."
   echo "--truststore, (optional) base64 encoded pkcs12 truststore for identifying the bootstrap (inclusive with truststorePassword)."
   echo "--truststorePassword (optional) password for accessing the pkcs12 truststore (inclusive with truststore)."
   echo "--keystore, (optional) base64 encoded pkcs12 keystore for identifying to the bootstrap (inclusive with keystorePassword)."
@@ -24,21 +24,15 @@ show_usage() {
   echo ""
   echo "Example:"
   echo "--bootstrap https://kafka-bootstrap-url:443 --registry http://service-registry-url:8080 \\"
-  echo "--strategy topic_record --topic sometopic --topic anothertopic --topic onemoretopic \\"
-  echo "--content \$(base64 -w 0 schema_files.tar.gz) \\"
+  echo "--strategy topic_record \\"
+  echo "--topic sometopic --schema \$(base64 -w 0 my-schema.avsc) \\"
+  echo "--topic someothertopic --schema \$(base64 -w 0 my-other-schema.avsc) \\"
   echo "--truststore \$(base64 -w 0 kafka_cluster_ca.p12) \\"
   echo "--truststorePassword secretTruststorePassword \\"
   echo "--keystore \$(base64 -w 0 kafka_user_ca.p12) \\"
   echo "--keystorePassword secretKeystorePassword"
   echo ""
-  echo "This should result in extracting the tar.gz archive decoded from the content parameter's value,"
-  echo "the extracted schema files will be pushed to kafka/registry instance using the specified subject"
-  echo "naming strategy."
-  echo "Each schema file will be pushed to all the specified topics, for the example above, if the"
-  echo "archive contains 2 schema files, then 6 schemas will be pushed, one per each topic specified."
-  echo ""
-  echo "Please note, multiple topics are only supported with the 'topic_record' naming strategy, the"
-  echo "other strategies ('topic' and 'record') will result in messages overwriting eachother."
+  echo "This should result in each schema file being produced to its respective topic using the specified naming strategy."
   echo ""
 }
 
@@ -50,6 +44,9 @@ fi
 # create a list for aggregating topics
 declare -a topics=()
 
+# create a list for aggregating schemas
+declare -a schemas=()
+
 # iterate over arguments and create named parameters
 while [ $# -gt 0 ]; do
   if [[ $1 == *"--"* ]]; then
@@ -57,6 +54,9 @@ while [ $# -gt 0 ]; do
     if [ "$param" = "topic" ]; then
       # if argument is topic, add to list
       topics+=("$2")
+    elif [ "$param" = "schema" ]; then
+      # if argument is topic, add to list
+      schemas+=("$2")
     else
       # else declare it
       declare "$param"="$2"
@@ -68,9 +68,16 @@ done
 # default named parameters
 strategy=${strategy:-topic_record}
 
-# verify mandatory named parameters existence
-if [ -z "$bootstrap" ] || [ -z "$registry" ] || [ -z "$content" ]; then
-  echo "expected parameter/s missing."
+# verify bootstrap
+if [ -z "$bootstrap" ]; then
+  echo "the bootstrap parameter is mandatory."
+  show_usage
+  exit 1
+fi
+
+# verify registry
+if [ -z "$registry" ]; then
+  echo "the registry parameter is mandatory."
   show_usage
   exit 1
 fi
@@ -89,9 +96,16 @@ if [ "${#topics[@]}" -lt 1 ]; then
   exit 1
 fi
 
-# verify multiple topics are only used with topic_record strategy
-if [ "${#topics[@]}" -gt 1 ] && [[ "$strategy" != "topic_record" ]]; then
-  echo "using the '$strategy' strategy with multiple topics may result in messages being overwritten."
+# verify minimum of 1 schema
+if [ "${#schemas[@]}" -lt 1 ]; then
+  echo "at least one schema is required"
+  show_usage
+  exit 1
+fi
+
+# verify topics and schema counts are correlated
+if [ "${#topics[@]}" -lt "${#schemas[@]}" ]; then
+  echo "topics and schemas specified doesn't correlates"
   show_usage
   exit 1
 fi
@@ -102,17 +116,17 @@ certs_dir=certs
 mkdir $dest_dir
 mkdir $certs_dir
 
-# decode the the tar.gz archive and extract it's content
-echo "$content" | base64 --decode - | tar -C $dest_dir -xz
-
 # create the java command for executing the program
 java_cmd="java -jar /app/schema-pusher-jar-with-dependencies.jar \
---bootstrap-url=$bootstrap --registry-url=$registry --naming-strategy=$strategy --directory=$dest_dir"
+--bootstrap-url=$bootstrap --registry-url=$registry --naming-strategy=$strategy"
 
-# iterate over the topics list and concatenate the topic to the java command
-for topic in "${topics[@]}"
+# iterate over the topics and schemas lists and create the arguments for the app
+for i in "${!topics[@]}"
 do
-  java_cmd+=" --topic=$topic"
+  # decode the schema based on the current index and save file based on topic name
+  echo "${schemas[$i]}" | base64 --decode - > $dest_dir/"${topics[$i]}".avsc
+  # incorporate topic and schema file into the java command
+  java_cmd+=" --topic=${topics[$i]} --schema-path=$dest_dir/${topics[$i]}.avsc"
 done
 
 # if provided truststore and truststore password

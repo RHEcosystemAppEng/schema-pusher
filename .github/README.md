@@ -17,10 +17,9 @@ And if you're in for the *full* [OpenShift][12] experience,</br>
 [AMQ][13] which is also part of [Red Hat's Integration][11] services portfolio,</br>
 got your underlying *Kafka* deployment covered with [AMQ Streams][14].
 
-This [containerized application][15] helps you easily migrate your various data structures,</br>
-schemas to [Red Hat's Service Registry][10].</br>
-Simply create a *tar.gz* archive with all of your schema files (subfolders are ok),</br>
-run the container, and get back to work.</br>
+This [containerized application][15] helps you easily migrate your various data structures schemas to
+[Red Hat's Service Registry][10].</br>
+Simply invoke with a list of topics and schemas, and get back to work.</br>
 :grin:
 
 ## Run
@@ -31,16 +30,14 @@ quay.io/ecosystem-appeng/schema-pusher:latest \
 --bootstrap https://<kafka-bootstrap-route-url-goes-here>:443 \
 --registry http://<service-registry-route-url-goes-here> \
 --strategy topic_record \
---topic topic1 --topic anothertopic1 --topic onemoretopic1 \
---content $(base64 -w 0 schema_files.tar.gz) \
+--topic sometopic --schema $(base64 -w 0 my_schema.avsc) \
+--topic someothertopic --schema $(base64 -w 0 my_other_schema.avsc) \
 --truststore $(base64 -w 0 kafka_cluster_ca.p12) \
 --truststorePassword $(cat kafka_cluster_ca.password) \
 --keystore $(base64 -w 0 kafka_user.p12) \
 --keystorePassword $(cat kafka_user.password)
 ```
 
-> Note, when producing messages to multiple topics, only the *topic_record* strategy is allowed.</br>
-> </br>
 > If you use a self-signed certificate for your *kafka* deployment, you can use the optional *--truststore*
 > and *truststorePassword* parameters to pass the *pkcs12 truststore* file and related password of the *kakfa
 > cluster*.</br>
@@ -57,6 +54,7 @@ quay.io/ecosystem-appeng/schema-pusher:latest \
 > oc get secret USER_SECRET_NAME -o jsonpath='{.data.user\.p12}' | base64 -d > kafka_user.p12
 > oc get secret USER_SECRET_NAME -o jsonpath='{.data.user\.password}' | base64 -d > kakfa_user.password
 > ```
+>
 
 ## Get help
 
@@ -69,7 +67,7 @@ docker run --rm -it quay.io/ecosystem-appeng/schema-pusher:latest --help
 prints:
 <!-- editorconfig-checker-disable-max-line-length -->
 ```text
-Tool for decoding and extracting base64 tar.gz archive containing schema files.
+Tool for decoding base64 schema files and procude kafka messages for the specified topics.
 The schema files will be pushed to Red Hat's service registry via the attached Java application.
 ------------------------------------------------------------------------------------------------
 Usage: -h/--help
@@ -79,8 +77,8 @@ Options:
 --bootstrap, (mandatory) kafka bootstrap url.
 --registry, (mandatory) service registry url.
 --strategy, (optional) subject naming strategy, [topic record topic_record] (default: topic_record).
---topic (mandatory), topic/s to push the schemas to (repeatable).
---content, (mandatory) base64 encoded 'tar.gz' archive containing the schema files.
+--topic (mandatory), topic/s to push the schemas to (repeatable in correlation with schema).
+--schema, (mandatory) base64 encoded schema file (repeatable in correlation with topic).
 --truststore, (optional) base64 encoded pkcs12 truststore for identifying the bootstrap (inclusive with truststorePassword).
 --truststorePassword (optional) password for accessing the pkcs12 truststore (inclusive with truststore).
 --keystore, (optional) base64 encoded pkcs12 keystore for identifying to the bootstrap (inclusive with keystorePassword).
@@ -88,45 +86,21 @@ Options:
 
 Example:
 --bootstrap https://kafka-bootstrap-url:443 --registry http://service-registry-url:8080 \
---strategy topic_record --topic sometopic --topic anothertopic --topic onemoretopic \
---content $(base64 -w 0 schema_files.tar.gz) \
+--strategy topic_record \
+--topic sometopic --schema $(base64 -w 0 my-schema.avsc) \
+--topic someothertopic --schema $(base64 -w 0 my-other-schema.avsc) \
 --truststore $(base64 -w 0 kafka_cluster_ca.p12) \
 --truststorePassword secretTruststorePassword \
 --keystore $(base64 -w 0 kafka_user_ca.p12) \
 --keystorePassword secretKeystorePassword
 
-This should result in extracting the tar.gz archive decoded from the content parameter's value,
-the extracted schema files will be pushed to kafka/registry instance using the specified subject
-naming strategy.
-Each schema file will be pushed to all the specified topics, for the example above, if the
-archive contains 2 schema files, then 6 schemas will be pushed, one per each topic specified.
-
-Please note, multiple topics are only supported with the 'topic_record' naming strategy, the
-other strategies ('topic' and 'record') will result in messages overwriting eachother.
+This should result in each schema file being produced to its respective topic using the specified naming strategy.
 ```
 <!-- editorconfig-checker-enable-max-line-length -->
-## Example usage
 
-The following is a *base64* representation of a *tar.gz* archive containing [these testing resources][50].</br>
-<!-- editorconfig-checker-disable-max-line-length -->
-```text
-H4sIAAAAAAAAA+2Y24rbMBCGfZ2nML4OtnwU9AEKvWgpdKEXpQTHVjZebCtI8pay5N0ryTmVdSo1GC1L5rsxlkce0D//jBPOqkgQLiJGOB1YRXhU0U7e1dtSRLzakq6MdgPfEhaVz4welnjk2YMkGOfqGuMcXV6PeHEWF2mK4jxJPZSkOMaen/9HjpsZuCiZ73uCdoRtmqtxpufvFH6r/mrTarwJy2de/SOHErgosqv6p3Ex6p8UUvpY6o8RzjwfuTiAO9f/ZeH7QV92hO/KigQf/EDKH47yhwd5R/lDJf9hiQdLtU/83uktjFSU1eOaepdae5D10fSP33T8+GjTkLbm8uEPead4OUXr6/L8Ri6Y3Bzsl68im/oyrqbDuiXBXob9XOwXb32a74+b/c+H9Ya2tVw25rDu/7r9y7gkx6iA/u+CGfS/mAQrQWn4xGn/Vw5T/8/ksD/1/zzx5EDABfR/J7jp/w+UGkdA2VMh03yxngSHDZ8mB8JEeF2T+qPKP/X6ex0gc3z/rTrKiC6P6Rxm/ydn/8tvQSQHgfwMBP87wI3/P8sCMTYAVUX27lfRttZXsa+cv6a0JWV/v9bXzOJ/daQt4fxKDuPvv6w4/f7PMqT8j3AC/neBo/l/KBBjDzhWkn0fOO6Y7gV37W0bZvH/L0b7x1Cd/WQOs//jC//nyv9pWoD/XeDG/99VgagmYGwAupTs3a/Dwfq3M4v/d7TpRXg1h9H/aX7+/1/5P8GZXAL/O8CN/7+qAjF6X5eRvfd1OHgfAAAAAAAAAADAjj85mSqvACgAAA==
-```
-<!-- editorconfig-checker-enable-max-line-length -->
-Using this value with [the example above](#run) will pick up three schema files:
+## Schema types
 
-- [test_schema.avsc][51]
-- [test_schema_more.avro][52]
-- [subfolder/test_schema_too.json][53]
-
-Each schema will be produced per each topic.</br>
-Since the example above specifies three topics, and we have three schemas,</br>
-hence, with the *topic_record* strategy, a total of nine messages will be produced.
-
-## Supported schema types
-
-At the time of writing this, this application supports [Apache AVRO][16].</br>
-Supported file types are `JSON`, `AVSC`, `AVRO`, other types won't get picked up by the application.
+Currently, we support [AVRO Schemas][16].
 
 ## Development
 
@@ -155,8 +129,7 @@ This application is constructed of three layers:
 You can invoke the *Java* application directly,</br>
 keep in mind that the app takes a directory of schema files and not an encoded base64 value,</br>
 as well as the actual path of the pkcs12 files and literal passwords.</br>
-The *Shell* script is the component in charge of decoding, extracting and preparing the arguments for invoking
-the *Java* app.</br>
+The *Shell* script is the component in charge of decoding and preparing the arguments for invoking the *Java* app.
 
 > Note that this form of execution requires an application build.
 
@@ -165,7 +138,9 @@ java -jar target/schema-pusher-jar-with-dependencies.jar \
 -b=https://<kafka-bootstrap-route-url-goes-here>:443 \
 -r=http://<service-registry-route-url-goes-here> \
 -t=topic1 -t=anothertopic1 -t=onemoretopic1 \
--d=src/test/resources/com/redhat/schema/pusher/avro/schemas/ \
+--schema-path=src/test/resources/com/redhat/schema/pusher/avro/schemas/test_schema2.avsc,
+--topic=anothertopic1,
+--schema-path=src/test/resources/com/redhat/schema/pusher/avro/schemas/test_schema1.avsc,
 --tf=certs/ca.p12 \
 --tp=secretClusterCaPKCS12password \
 --kf=certs/user.p12 \
@@ -183,15 +158,13 @@ java -jar target/schema-pusher-jar-with-dependencies.jar --help
 prints:
 
 ```text
-Usage: <main class> [-hV] -b=<kafkaBootstrap> -d=<directory>
-                    [-n=<namingStrategy>] -r=<serviceRegistry> (-t=<topic>)...
+Usage: <main class> [-hV] -b=<kafkaBootstrap> [-n=<namingStrategy>]
+                    -r=<serviceRegistry> (-t=<topic> -s=<schemaPath>)...
                     [--tf=<truststoreFile> --tp=<truststorePassword>]
                     [--kf=<keystoreFile> --kp=<keystorePassword>]
 Push schemas to Red Hat's Service Registry
   -b, --bootstrap-url=<kafkaBootstrap>
                         The url for Kafka's bootstrap server.
-  -d, --directory=<directory>
-                        The path of the directory containing the schema files.
   -h, --help            Show this help message and exit.
       --kf, --keystore-file=<keystoreFile>
                         The path for the keystore pkcs12 file for use with the
@@ -203,14 +176,17 @@ Push schemas to Red Hat's Service Registry
                         The subject naming strategy.
   -r, --registry-url=<serviceRegistry>
                         The url for Red Hat's service registry.
-  -t, --topic=<topic>   The topic to produce the message too, repeatable.
+  -s, --schema-path=<schemaPath>
+                        The schema path for the topic, correlated with a topic.
+  -t, --topic=<topic>   The desired topic for the schema, correlated with a
+                          schema path.
       --tf, --truststore-file=<truststoreFile>
                         The path for the truststore pkcs12 file for use with
                           the Kafka producer
       --tp, --truststore-password=<truststorePassword>
                         The password for the truststore pkcs12 file for use
                           with the Kafka producer
-  -V, --version         Print version information and exitPKCS
+  -V, --version         Print version information and exit.
 ```
 
 ### Usefull build commands
@@ -309,10 +285,6 @@ this will automatically create a *GitHub Release* for the *1.2.3* tag with the t
 [24]: https://access.redhat.com/documentation/en-us/red_hat_amq/2021.q3/html-single/deploying_and_upgrading_amq_streams_on_openshift/index#setup-external-clients-str
 
 <!-- relative paths -->
-[50]: ../src/test/resources/com/redhat/schema/pusher/avro/schemas
-[51]: ../src/test/resources/com/redhat/schema/pusher/avro/schemas/test_schema.avsc
-[52]: ../src/test/resources/com/redhat/schema/pusher/avro/schemas/test_schema_more.avro
-[53]: ../src/test/resources/com/redhat/schema/pusher/avro/schemas/subfolder/test_schema_too.json
 [54]: ../src/main/shell/entrypoint.sh
 [55]: ../src/main/java/com/redhat/schema/pusher/PushCli.java
 [56]: ../src/main/java/com/redhat/schema/pusher/avro/AvroPushCli.java

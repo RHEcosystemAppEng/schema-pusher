@@ -1,7 +1,7 @@
 {
   "namespace": "com.redhat.schema.pusher.avro.schemas",
   "type": "record",
-  "name": "TestingSchema",
+  "name": "TestingSchema1Name",
   "fields": [
       {"name": "name", "type": "string"},
       {"name": "id", "type": "double"}

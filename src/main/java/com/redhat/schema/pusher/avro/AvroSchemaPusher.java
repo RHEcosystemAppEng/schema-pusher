@@ -8,10 +8,10 @@ import static java.util.Objects.nonNull;
 import com.redhat.schema.pusher.PushCli;
 import com.redhat.schema.pusher.ReturnCode;
 import com.redhat.schema.pusher.SchemaPusher;
+import com.redhat.schema.pusher.TopicAndSchema;
 import io.confluent.kafka.serializers.AbstractKafkaSchemaSerDeConfig;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
@@ -58,31 +58,30 @@ public final class AvroSchemaPusher implements SchemaPusher {
 
   @Override
   @SuppressWarnings("unchecked")
-  public ReturnCode push(final List<String> topics, final List<Path> schemas) {
-    LOGGER.info("loading producer");
+  public ReturnCode push(final List<TopicAndSchema> topicAndSchemaRecords) {
+    LOGGER.info("loading the producer");
     try (var producer = context.getBean(KafkaProducer.class, producerProps)) {
-      topics.parallelStream().forEach(topic -> {
+      topicAndSchemaRecords.parallelStream().forEach(rec -> {
+        var fileName = rec.schema().toFile().getName();
         LOGGER.info(
             () -> String.format(
-              "parallel stream for topic '%s' running on thread '%s'",
-              topic,
+              "parallel stream for topic '%s' and schema '%s' running on thread '%s'",
+              rec.topic(),
+              fileName,
               Thread.currentThread().getName()));
-        schemas.stream().forEach(path -> {
-          try {
-            var parser = new Parser();
-            var schema = parser.parse(Files.newInputStream(path));
-            var avroRec = new GenericData.Record(schema);
-            var prodRec = new ProducerRecord<String, IndexedRecord>(topic, avroRec);
-            var callback = context.getBean(Callback.class, LOGGER, path.toFile().getName(), topic);
-            producer.send(prodRec, callback);
-          } catch (final IOException exc) {
-            var fileName = path.toFile().getName();
-            LOGGER.log(
-                Level.SEVERE,
-                exc,
-                () -> String.format("failed to push '%s' to topic '%s'", fileName, topic));
-          }
-        });
+        try {
+          var parser = new Parser();
+          var schema = parser.parse(Files.newInputStream(rec.schema()));
+          var avroRec = new GenericData.Record(schema);
+          var prodRec = new ProducerRecord<String, IndexedRecord>(rec.topic(), avroRec);
+          var callback = context.getBean(Callback.class, LOGGER, fileName, rec.topic());
+          producer.send(prodRec, callback);
+        } catch (final IOException exc) {
+          LOGGER.log(
+              Level.SEVERE,
+              exc,
+              () -> String.format("failed to push '%s' to topic '%s'", fileName, rec.topic()));
+        }
       });
       producer.flush();
       return ReturnCode.SUCCESS;

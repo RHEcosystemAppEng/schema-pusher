@@ -1,7 +1,7 @@
 {
   "namespace": "com.redhat.schema.pusher.avro.schemas",
   "type": "record",
-  "name": "TestingSchemaMore",
+  "name": "TestingSchema2Name",
   "fields": [
       {"name": "moreName", "type": "string"},
       {"name": "moreId", "type": "double"},
