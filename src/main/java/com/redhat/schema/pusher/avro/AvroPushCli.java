@@ -1,14 +1,9 @@
 package com.redhat.schema.pusher.avro;
 
-import static com.redhat.schema.pusher.ReturnCode.DIRECTORY_ERROR;
-
 import com.redhat.schema.pusher.ManifestVersionProvider;
 import com.redhat.schema.pusher.PushCli;
 import com.redhat.schema.pusher.SchemaPusher;
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.List;
-import java.util.logging.Level;
+import com.redhat.schema.pusher.TopicAndSchema;
 import java.util.logging.Logger;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
@@ -25,8 +20,6 @@ import picocli.CommandLine.Command;
     versionProvider = ManifestVersionProvider.class)
 public final class AvroPushCli extends PushCli {
   private static final Logger LOGGER = Logger.getLogger(AvroPushCli.class.getName());
-  private static final List<String> SUPPORTED_EXTENSIONS = List.of("json", "avsc", "avro");
-
   private final ApplicationContext context;
 
   /**
@@ -44,25 +37,14 @@ public final class AvroPushCli extends PushCli {
    */
   @Override
   public Integer call() {
-    validate();
     LOGGER.info("starting");
-    LOGGER.info("loading schemas");
-    List<Path> schemas;
-    try {
-      schemas = getPathList(SUPPORTED_EXTENSIONS, getDirectory());
-    } catch (final IOException ioe) {
-      LOGGER.log(
-          Level.SEVERE,
-          ioe,
-          () -> String.format("failed to get schema files from directory '%s'", getDirectory()));
-      return DIRECTORY_ERROR.code();
-    }
-    LOGGER.info("loading topics");
-    var topics = getTopicAggregators().stream().map(TopicAggregator::getTopic).toList();
+    LOGGER.info("creating topic and schema pair records");
+    var topicsAndSchemaRecords = getTopicSchemaAggregators().stream()
+        .map(a -> new TopicAndSchema(a.getTopic(), a.getSchemaPath())).toList();
     LOGGER.info("loading schema pusher");
     var schemaPusher = context.getBean(SchemaPusher.class, this);
     LOGGER.info("starting push");
-    var retCode = schemaPusher.push(topics, schemas);
+    var retCode = schemaPusher.push(topicsAndSchemaRecords);
     LOGGER.info("done");
     return retCode.code();
   }

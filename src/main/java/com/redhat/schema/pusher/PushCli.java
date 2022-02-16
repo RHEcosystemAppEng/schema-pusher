@@ -1,22 +1,13 @@
 package com.redhat.schema.pusher;
 
-import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.concurrent.Callable;
-import java.util.function.Predicate;
 import picocli.CommandLine.ArgGroup;
-import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Option;
-import picocli.CommandLine.ParameterException;
-import picocli.CommandLine.Spec;
 
 /** Command line specification and utility methods, CLI implementations should extend this class. */
 public abstract class PushCli implements Callable<Integer> {
-  @Spec private CommandSpec spec;
-
   /* ******************** *
    * Command Line Options *
    * ******************** */
@@ -38,14 +29,8 @@ public abstract class PushCli implements Callable<Integer> {
       defaultValue = "TOPIC_RECORD")
   private NamingStrategy namingStrategy;
 
-  @Option(
-      names = {"-d", "--directory"},
-      description = "The path of the directory containing the schema files.",
-      required = true)
-  private String directory;
-
   @ArgGroup(exclusive = false, multiplicity = "1..*")
-  private List<TopicAggregator> topicAggregators;
+  private List<TopicSchemaAggregator> topicSchemaAggregators;
 
   @ArgGroup(exclusive = false, multiplicity = "0..1")
   private TruststoreInfo truststoreInfo;
@@ -53,20 +38,35 @@ public abstract class PushCli implements Callable<Integer> {
   @ArgGroup(exclusive = false, multiplicity = "0..1")
   private KeystoreInfo keystoreInfo;
 
-  /** Use for aggregating topics specified by the user. */
-  public static final class TopicAggregator {
+  /** Use for aggregating topics-schema_path pairs specified by the user. */
+  public static final class TopicSchemaAggregator {
     @Option(
         names = {"-t", "--topic"},
-        description = "The topic to produce the message too, repeatable.",
+        description = "The desired topic for the schema, correlated with a schema path.",
         required = true)
     private String topic;
 
+    @Option(
+        names = {"-s", "--schema-path"},
+        description = "The schema path for the topic, correlated with a topic.",
+        required = true
+    )
+    private Path schemaPath;
+
     /**
      * Returns the topic.
-     * @return the topic.
+     * @return the {@link String} topic.
      */
     public String getTopic() {
       return this.topic;
+    }
+
+    /**
+     * Returns the schema path.
+     * @return the schema file {@link Path}.
+     */
+    public Path getSchemaPath() {
+      return this.schemaPath;
     }
   }
 
@@ -132,48 +132,6 @@ public abstract class PushCli implements Callable<Integer> {
     }
   }
 
-  /* *************** *
-   * Utility Methods *
-   * *************** */
-
-  /**
-   * Get a recursive list of files from a directory with filtering by file extensions.
-   *
-   * @param extensions a list of extensions to filter by.
-   * @param folder the directory to look in.
-   * @return a {@link List} of {@link Path}.
-   * @throws IOException when failed to get the directory or files.
-   */
-  protected final List<Path> getPathList(
-      final List<String> extensions, final String folder) throws IOException {
-    final Predicate<Path> extensionFilter =
-        p -> {
-          var file = p.toFile().getName();
-          var idx = file.lastIndexOf(".");
-          if (idx < 0) {
-            return false;
-          }
-          var ext = file.substring(idx + 1);
-          return extensions.contains(ext);
-        };
-    try (var walkStream = Files.walk(Paths.get(folder))) {
-      return walkStream.filter(Files::isRegularFile).filter(extensionFilter).toList();
-    }
-  }
-
-  /**
-   * Use for validating the user specified arguments,
-   * i.e. multiple topic works with the topic_record strategy only, to avoid overwriting schemas.
-   */
-  protected void validate() {
-    if (getTopicAggregators().size() > 1
-        && !getNamingStrategy().equals(NamingStrategy.TOPIC_RECORD)) {
-      throw new ParameterException(
-        spec.commandLine(),
-        "For multiple topics, please use the default topic_record strategy.");
-    }
-  }
-
   /* ************* *
    * Field Getters *
    * ************* */
@@ -205,21 +163,12 @@ public abstract class PushCli implements Callable<Integer> {
   }
 
   /**
-   * Get the list of topics as specified by the user.
+   * Get the list of topics-schema_path pairs as specified by the user.
    *
-   * @return a {@link List} of {@link TopicAggregator} instances.
+   * @return a {@link List} of {@link TopicSchemaAggregator} instances.
    */
-  public List<TopicAggregator> getTopicAggregators() {
-    return this.topicAggregators;
-  }
-
-  /**
-   * Get the schema files directory for scaning as specified by the user.
-   *
-   * @return a {@link String} directory path.
-   */
-  public String getDirectory() {
-    return this.directory;
+  public List<TopicSchemaAggregator> getTopicSchemaAggregators() {
+    return this.topicSchemaAggregators;
   }
 
   /**

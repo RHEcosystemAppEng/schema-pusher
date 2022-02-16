@@ -1,7 +1,7 @@
 // editorconfig-checker-disable-max-line-length
 package com.redhat.schema.pusher.avro;
 
-import static org.assertj.core.api.BDDAssertions.then;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
@@ -11,6 +11,7 @@ import com.redhat.schema.pusher.NamingStrategy;
 import com.redhat.schema.pusher.PushCli;
 import com.redhat.schema.pusher.ReturnCode;
 import com.redhat.schema.pusher.SchemaPusher;
+import com.redhat.schema.pusher.TopicAndSchema;
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
 import java.util.List;
@@ -31,7 +32,7 @@ class Avro_push_cli_implemenetation_Test {
   private static final String FAKE_BOOTSTRAP = "https://fake-kafka-bootstrap:443";
   private static final String FAKE_REGISTRY = "http://fake-redhat-service-registry";
   private static final String FAKE_TOPIC = "faketopic";
-  private static final String DIRECTORY = "com/redhat/schema/pusher/avro/schemas/subfolder";
+  private static final String TESTING_SCHEMA = "com/redhat/schema/pusher/avro/schemas/test_schema2.avsc";
   private static final NamingStrategy FAKE_NAMING_STRATEGY = NamingStrategy.TOPIC_RECORD;
 
   @Mock private ApplicationContext mockContext;
@@ -39,14 +40,13 @@ class Avro_push_cli_implemenetation_Test {
 
   @BeforeEach
   void initialize() throws URISyntaxException {
-    var directoryAbs = Paths.get(getClass().getClassLoader().getResource(DIRECTORY).toURI());
     // parse the command line arguments for the sut
     new CommandLine(sut).parseArgs(
         "-b=" + FAKE_BOOTSTRAP,
         "-r=" + FAKE_REGISTRY,
         "-n=" + FAKE_NAMING_STRATEGY.toString(),
         "-t=" + FAKE_TOPIC,
-        "-d=" + directoryAbs.toString()
+        "-s=" + TESTING_SCHEMA
     );
   }
 
@@ -55,13 +55,13 @@ class Avro_push_cli_implemenetation_Test {
       @Mock final SchemaPusher mockSchemaPusher) throws URISyntaxException {
     // turn off the sut's logger to avoid polluting the build log
     ((Logger) getField(sut, "LOGGER")).setLevel(Level.OFF);
-    // given the target directory has only one file
-    var expectedFile = Paths.get(getClass().getClassLoader().getResource(DIRECTORY + "/test_schema_too.json").toURI());
+    // the expected TopicAndSchema record
+    var expectedRecord = new TopicAndSchema(FAKE_TOPIC, Paths.get(TESTING_SCHEMA));
     // given the mocked di context will return  the mock schema pusher per the arguments
     given(mockContext.getBean(eq(SchemaPusher.class), any(PushCli.class))).willReturn(mockSchemaPusher);
     // given the mocked schema pusher will return a success code for the fake topic and testing schema file path
-    given(mockSchemaPusher.push(List.of(FAKE_TOPIC), List.of(expectedFile))).willReturn(ReturnCode.SUCCESS);
+    given(mockSchemaPusher.push(List.of(expectedRecord))).willReturn(ReturnCode.SUCCESS);
     // when the sut executes, then the stubbed return success code should be success
-    then(sut.call()).isEqualTo(ReturnCode.SUCCESS.code());
+    assertThat(sut.call()).isEqualTo(ReturnCode.SUCCESS.code());
   }
 }

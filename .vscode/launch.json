@@ -25,7 +25,7 @@
   "configurations": [
     {
       "type": "java",
-      "name": "Launch Schema Pusher CLI",
+      "name": "Java: Launch Schema Pusher CLI",
       "request": "launch",
       "mainClass": "com.redhat.schema.pusher.MainApp",
       "projectName": "schema-pusher",
@@ -34,8 +34,9 @@
         "--registry-url=http://apicurioreg.tomer-avro.router-default.apps.ocp-dev01.lab.eng.tlv2.redhat.com",
         "--naming-strategy=topic_record",
         "--topic=topic1",
+        "--schema-path=${workspaceFolder}/src/test/resources/com/redhat/schema/pusher/avro/schemas/test_schema2.avsc",
         "--topic=anothertopic1",
-        "--directory=${workspaceFolder}/src/test/resources/com/redhat/schema/pusher/avro/schemas/",
+        "--schema-path=${workspaceFolder}/src/test/resources/com/redhat/schema/pusher/avro/schemas/test_schema1.avsc",
         "--truststore-file=${workspaceFolder}/certs/ca.p12",
         "--truststore-password=${input:truststore_password}",
         "--keystore-file=${workspaceFolder}/certs/user.p12",

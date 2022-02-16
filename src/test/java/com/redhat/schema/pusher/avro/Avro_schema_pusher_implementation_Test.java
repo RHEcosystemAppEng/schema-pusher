@@ -19,6 +19,7 @@ import com.redhat.schema.pusher.NamingStrategy;
 import com.redhat.schema.pusher.PushCli;
 import com.redhat.schema.pusher.PushCli.KeystoreInfo;
 import com.redhat.schema.pusher.PushCli.TruststoreInfo;
+import com.redhat.schema.pusher.TopicAndSchema;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.URISyntaxException;
@@ -77,7 +78,7 @@ class Avro_schema_pusher_implementation_Test {
     // stub the private di context
     setField(sut, "context", mockContext);
     // stub the mocked context to return a mocked callback for the specific arguments
-    given(mockContext.getBean(eq(Callback.class), any(Logger.class), eq("test_schema.avsc"), eq(FAKE_TOPIC1))).willReturn(mockCallback);
+    given(mockContext.getBean(eq(Callback.class), any(Logger.class), eq("test_schema1.avsc"), eq(FAKE_TOPIC1))).willReturn(mockCallback);
     // turn off the sut's logger to avoid polluting the build log
     ((Logger) getField(sut, "LOGGER")).setLevel(Level.OFF);
     // short-circuit the producer to throw an exception
@@ -85,9 +86,9 @@ class Avro_schema_pusher_implementation_Test {
     // given the di context will return the mocked producer as bean per the properties match
     given(mockContext.getBean(eq(KafkaProducer.class), argThat(securedPropertiesMatcher))).willReturn(mockProducer);
     // given the following test schema
-    var testSchema = getResourceAbsPath("com/redhat/schema/pusher/avro/schemas/test_schema.avsc");
+    var testSchema = getResourceAbsPath("com/redhat/schema/pusher/avro/schemas/test_schema1.avsc");
     // when invoking the push method with it no exceptions should be thrown
-    assertThatNoException().isThrownBy(() -> sut.push(List.of(FAKE_TOPIC1), List.of(testSchema)));
+    assertThatNoException().isThrownBy(() -> sut.push(List.of(new TopicAndSchema(FAKE_TOPIC1, testSchema))));
     // and the mock producer was invoked
     then(mockProducer).should().send(any(ProducerRecord.class), eq(mockCallback));
   }
@@ -115,21 +116,21 @@ class Avro_schema_pusher_implementation_Test {
     // stub the private di context
     setField(sut, "context", mockContext);
     // stub the mocked context to return a mocked callback for the specific arguments
-    given(mockContext.getBean(eq(Callback.class), any(Logger.class), eq("test_schema.avsc"), eq(FAKE_TOPIC1))).willReturn(mockCallback);
+    given(mockContext.getBean(eq(Callback.class), any(Logger.class), eq("test_schema1.avsc"), eq(FAKE_TOPIC1))).willReturn(mockCallback);
     // given the di context will return the mocked producer as bean per the properties match
     given(mockContext.getBean(eq(KafkaProducer.class), argThat(selfSingedPropertiesMatcher))).willReturn(mockProducer);
     // given the following two schema test files
-    var testSchema1 = getResourceAbsPath("com/redhat/schema/pusher/avro/schemas/test_schema.avsc");
+    var testSchema1 = getResourceAbsPath("com/redhat/schema/pusher/avro/schemas/test_schema1.avsc");
     // when invoking the push method with two topics and two schema files
-    sut.push(List.of(FAKE_TOPIC1), List.of(testSchema1));
+    sut.push(List.of(new TopicAndSchema(FAKE_TOPIC1, testSchema1)));
     // one invocation of the send method with expected arguments including the mocked callback
-    then(mockProducer).should().send(argThat(prodRecMatcher(FAKE_TOPIC1, "TestingSchema")::test), eq(mockCallback));
+    then(mockProducer).should().send(argThat(prodRecMatcher(FAKE_TOPIC1, "TestingSchema1Name")::test), eq(mockCallback));
     // and one invocation for flushing the producer cache
     then(mockProducer).should().flush();
   }
 
   @Test
-  void pushing_two_files_and_two_topics_should_result_in_four_producer_records_sent() throws URISyntaxException {
+  void pushing_two_files_and_two_topics_should_result_in_two_producer_records_sent() throws URISyntaxException {
     // stub the cli
     when(mockCli.getKafkaBootstrap()).thenReturn(FAKE_NOT_SECURED_BOOTSTRAP);
     when(mockCli.getServiceRegistry()).thenReturn(FAKE_REGISTRY);
@@ -145,28 +146,24 @@ class Avro_schema_pusher_implementation_Test {
     // given the di context will return the mocked producer as bean per the properties match
     given(mockContext.getBean(eq(KafkaProducer.class), argThat(notSecuredPropertiesMatcher))).willReturn(mockProducer);
     // given the following two schema test files
-    var testSchema1 = getResourceAbsPath("com/redhat/schema/pusher/avro/schemas/test_schema.avsc");
-    var testSchema2 = getResourceAbsPath("com/redhat/schema/pusher/avro/schemas/test_schema_more.avro");
+    var testSchema1 = getResourceAbsPath("com/redhat/schema/pusher/avro/schemas/test_schema1.avsc");
+    var testSchema2 = getResourceAbsPath("com/redhat/schema/pusher/avro/schemas/test_schema2.avsc");
     // when invoking the push method with two topics and two schema files
-    sut.push(List.of(FAKE_TOPIC1, FAKE_TOPIC2), List.of(testSchema1, testSchema2));
+    sut.push(List.of(
+      new TopicAndSchema(FAKE_TOPIC1, testSchema1),
+      new TopicAndSchema(FAKE_TOPIC2, testSchema2)));
     // then producer should be invoked in order
     var mockProdOrder = inOrder(mockProducer);
     // four invocations of the send method, one per schema+topic
-    then(mockProducer).should(mockProdOrder, times(4)).send(prodRecCaptore.capture(), eq(mockCallback));
+    then(mockProducer).should(mockProdOrder, times(2)).send(prodRecCaptore.capture(), eq(mockCallback));
     // and one invocation for flushing the producer cache
     then(mockProducer).should(mockProdOrder).flush();
     // verify each schema was sent to each topic (schema names are from in the schema files)
     assertThat(prodRecCaptore.getAllValues())
-        .filteredOn(prodRecMatcher(FAKE_TOPIC1, "TestingSchema"))
+        .filteredOn(prodRecMatcher(FAKE_TOPIC1, "TestingSchema1Name"))
         .hasSize(1);
     assertThat(prodRecCaptore.getAllValues())
-        .filteredOn(prodRecMatcher(FAKE_TOPIC1, "TestingSchemaMore"))
-        .hasSize(1);
-    assertThat(prodRecCaptore.getAllValues())
-        .filteredOn(prodRecMatcher(FAKE_TOPIC2, "TestingSchema"))
-        .hasSize(1);
-    assertThat(prodRecCaptore.getAllValues())
-        .filteredOn(prodRecMatcher(FAKE_TOPIC2, "TestingSchemaMore"))
+        .filteredOn(prodRecMatcher(FAKE_TOPIC2, "TestingSchema2Name"))
         .hasSize(1);
   }
 
