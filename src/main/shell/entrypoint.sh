@@ -17,6 +17,8 @@ show_usage() {
   echo "--strategy, (optional) subject naming strategy, [${naming_strategies[*]}] (default: topic_record)."
   echo "--topic (mandatory), topic/s to push the schemas to (repeatable in correlation with schema)."
   echo "--schema, (mandatory) base64 encoded schema file (repeatable in correlation with topic)."
+  echo "--propkey, (optional) a string key to set for the procucer (repeatable in correlation with propvalue)."
+  echo "--propValue, (optional) a string value to set for the procucer (repeatable in correlation with propkey)."
   echo "--truststore, (optional) base64 encoded pkcs12 truststore for identifying the bootstrap (inclusive with truststorePassword)."
   echo "--truststorePassword (optional) password for accessing the pkcs12 truststore (inclusive with truststore)."
   echo "--keystore, (optional) base64 encoded pkcs12 keystore for identifying to the bootstrap (inclusive with keystorePassword)."
@@ -27,6 +29,8 @@ show_usage() {
   echo "--strategy topic_record \\"
   echo "--topic sometopic --schema \$(base64 -w 0 my-schema.avsc) \\"
   echo "--topic someothertopic --schema \$(base64 -w 0 my-other-schema.avsc) \\"
+  echo "--propkey basic.auth.credentials.source --propvalue USER_INFO \\"
+  echo "--propkey schema.registry.basic.auth.user.info --propvalue registry-user:changeme \\"
   echo "--truststore \$(base64 -w 0 kafka_cluster_ca.p12) \\"
   echo "--truststorePassword secretTruststorePassword \\"
   echo "--keystore \$(base64 -w 0 kafka_user_ca.p12) \\"
@@ -41,11 +45,11 @@ if [[ ($1 == "--help") || $1 == "-h" ]]; then
   exit 0
 fi
 
-# create a list for aggregating topics
-declare -a topics=()
-
-# create a list for aggregating schemas
-declare -a schemas=()
+# create a lists for aggregating options
+declare -a topics=() # aggregate topics
+declare -a schemas=() # aggregate schemas
+declare -a propkeys=() # aggregate consumer custom property keys
+declare -a propvalues=() # aggregate consumer custom property values
 
 # iterate over arguments and create named parameters
 while [ $# -gt 0 ]; do
@@ -55,8 +59,14 @@ while [ $# -gt 0 ]; do
       # if argument is topic, add to list
       topics+=("$2")
     elif [ "$param" = "schema" ]; then
-      # if argument is topic, add to list
+      # if argument is schema, add to list
       schemas+=("$2")
+    elif [ "$param" = "propkey" ]; then
+      # if argument is propkey, add to list
+      propkeys+=("$2")
+    elif [ "$param" = "propvalue" ]; then
+      # if argument is propvalue, add to list
+      propvalues+=("$2")
     else
       # else declare it
       declare "$param"="$2"
@@ -90,22 +100,31 @@ if ! [[ ${naming_strategies[*]} =~ $strategy ]]; then
 fi
 
 # verify minimum of 1 topic
-if [ "${#topics[@]}" -lt 1 ]; then
+# shellcheck disable=SC2128
+if [ -z "$topics" ]; then
   echo "at least one topic is required"
   show_usage
   exit 1
 fi
 
 # verify minimum of 1 schema
-if [ "${#schemas[@]}" -lt 1 ]; then
+# shellcheck disable=SC2128
+if [ -z "$schemas" ]; then
   echo "at least one schema is required"
   show_usage
   exit 1
 fi
 
 # verify topics and schema counts are correlated
-if [ "${#topics[@]}" -lt "${#schemas[@]}" ]; then
-  echo "topics and schemas specified doesn't correlates"
+if [ "${#topics[@]}" -ne "${#schemas[@]}" ]; then
+  echo "topics and schemas specified doesn't correlate"
+  show_usage
+  exit 1
+fi
+
+# verify property keys and values counts are correlated
+if [ "${#propkeys[@]}" -ne "${#propvalues[@]}" ]; then
+  echo "property keys and values specified doesn't correlate"
   show_usage
   exit 1
 fi
@@ -121,12 +140,15 @@ java_cmd="java -jar /app/schema-pusher-jar-with-dependencies.jar \
 --bootstrap-url=$bootstrap --registry-url=$registry --naming-strategy=$strategy"
 
 # iterate over the topics and schemas lists and create the arguments for the app
-for i in "${!topics[@]}"
-do
+for i in "${!topics[@]}"; do
   # decode the schema based on the current index and save file based on topic name
   echo "${schemas[$i]}" | base64 --decode - > $dest_dir/"${topics[$i]}".avsc
   # incorporate topic and schema file into the java command
   java_cmd+=" --topic=${topics[$i]} --schema-path=$dest_dir/${topics[$i]}.avsc"
+done
+
+for i in "${!propkeys[@]}"; do
+  java_cmd+=" --property-key=${propkeys[$i]} --property-value=${propvalues[$i]}"
 done
 
 # if provided truststore and truststore password

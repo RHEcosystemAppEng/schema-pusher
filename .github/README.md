@@ -32,20 +32,27 @@ quay.io/ecosystem-appeng/schema-pusher:latest \
 --strategy topic_record \
 --topic sometopic --schema $(base64 -w 0 my_schema.avsc) \
 --topic someothertopic --schema $(base64 -w 0 my_other_schema.avsc) \
+--propkey basic.auth.credentials.source --propvalue USER_INFO \
+--propkey schema.registry.basic.auth.user.info --propvalue registry-user:changeme \
 --truststore $(base64 -w 0 kafka_cluster_ca.p12) \
 --truststorePassword $(cat kafka_cluster_ca.password) \
 --keystore $(base64 -w 0 kafka_user.p12) \
 --keystorePassword $(cat kafka_user.password)
 ```
 
-> If you use a self-signed certificate for your *kafka* deployment, you can use the optional *--truststore*
-> and *truststorePassword* parameters to pass the *pkcs12 truststore* file and related password of the *kakfa
-> cluster*.</br>
-> If your *kafka* deployment require authentication, you can use the optional *--keystore* and *--keystorePassword*
-> to pass the the *pkcs12 keystore* file and related password of the *kakfa user*.</br>
+> You can set custom *producer* properties using the optional repeatable *--propkey* and *--propvalue*.</br>
+> Note that some keys will be overwritten by the application.</br>
 > </br>
-> You can follow [this][24] and grab the relevant *pkcs12* and password,
-> replace *USER_SECRET_NAME* with the user secret name,
+> If you use a self-signed certificate for your *kafka* deployment,</br>
+> you can use the optional *--truststore* and *truststorePassword* parameters to set</br>
+> the *pkcs12 truststore* and related password of the *kakfa cluster*.</br>
+> </br>
+> If your *kafka* deployment require authentication,</br>
+> you can use the optional *--keystore* and *--keystorePassword* parameters to set</br>
+> the *pkcs12 keystore* and related password of the *kakfa user*.</br>
+> </br>
+> You can follow [this][24] and grab the relevant *pkcs12* and password,</br>
+> replace *USER_SECRET_NAME* with the user secret name,</br>
 > repalce *CLUSTER_CA_SECRET_NAME* with the cluster ca name (usally ends with *cluster-ca-cert*):
 >
 > ```shell
@@ -79,6 +86,8 @@ Options:
 --strategy, (optional) subject naming strategy, [topic record topic_record] (default: topic_record).
 --topic (mandatory), topic/s to push the schemas to (repeatable in correlation with schema).
 --schema, (mandatory) base64 encoded schema file (repeatable in correlation with topic).
+--propkey, (optional) a string key to set for the procucer (repeatable in correlation with propvalue).
+--propValue, (optional) a string value to set for the procucer (repeatable in correlation with propkey).
 --truststore, (optional) base64 encoded pkcs12 truststore for identifying the bootstrap (inclusive with truststorePassword).
 --truststorePassword (optional) password for accessing the pkcs12 truststore (inclusive with truststore).
 --keystore, (optional) base64 encoded pkcs12 keystore for identifying to the bootstrap (inclusive with keystorePassword).
@@ -89,6 +98,8 @@ Example:
 --strategy topic_record \
 --topic sometopic --schema $(base64 -w 0 my-schema.avsc) \
 --topic someothertopic --schema $(base64 -w 0 my-other-schema.avsc) \
+--propkey basic.auth.credentials.source --propvalue USER_INFO \
+--propkey schema.registry.basic.auth.user.info --propvalue registry-user:changeme \
 --truststore $(base64 -w 0 kafka_cluster_ca.p12) \
 --truststorePassword secretTruststorePassword \
 --keystore $(base64 -w 0 kafka_user_ca.p12) \
@@ -97,6 +108,23 @@ Example:
 This should result in each schema file being produced to its respective topic using the specified naming strategy.
 ```
 <!-- editorconfig-checker-enable-max-line-length -->
+
+## Producer property keys
+
+The following *producer property keys* cannot be overwritten using the *--propky* and *--propvalue* parameters:
+
+- *bootstrap.servers*
+- *schema.registry.url*
+- *key.serializer*
+- *value.serializer*
+- *value.subject.name.strategy*
+- *security.protocol*
+- *ssl.truststore.location*
+- *ssl.truststore.password*
+- *ssl.truststore.type*
+- *ssl.keystore.location*
+- *ssl.keystore.password*
+- *ssl.keystore.type*
 
 ## Schema types
 
@@ -137,10 +165,12 @@ The *Shell* script is the component in charge of decoding and preparing the argu
 java -jar target/schema-pusher-jar-with-dependencies.jar \
 -b=https://<kafka-bootstrap-route-url-goes-here>:443 \
 -r=http://<service-registry-route-url-goes-here> \
--t=topic1 -t=anothertopic1 -t=onemoretopic1 \
---schema-path=src/test/resources/com/redhat/schema/pusher/avro/schemas/test_schema2.avsc,
---topic=anothertopic1,
---schema-path=src/test/resources/com/redhat/schema/pusher/avro/schemas/test_schema1.avsc,
+-t=sometopic \
+-s=src/test/resources/com/redhat/schema/pusher/avro/schemas/test_schema1.avsc \
+-t=someothertopic \
+-s=src/test/resources/com/redhat/schema/pusher/avro/schemas/test_schema2.avsc \
+--pk=custom-propety-key \
+--pv=custom-property-value \
 --tf=certs/ca.p12 \
 --tp=secretClusterCaPKCS12password \
 --kf=certs/user.p12 \
@@ -160,6 +190,7 @@ prints:
 ```text
 Usage: <main class> [-hV] -b=<kafkaBootstrap> [-n=<namingStrategy>]
                     -r=<serviceRegistry> (-t=<topic> -s=<schemaPath>)...
+                    [--pk=<propertyKey> --pv=<propertyValue>]
                     [--tf=<truststoreFile> --tp=<truststorePassword>]
                     [--kf=<keystoreFile> --kp=<keystorePassword>]
 Push schemas to Red Hat's Service Registry
@@ -174,6 +205,10 @@ Push schemas to Red Hat's Service Registry
                           the Kafka producer
   -n, --naming-strategy=<namingStrategy>
                         The subject naming strategy.
+      --pk, --property-key=<propertyKey>
+                        Producer property key
+      --pv, --property-value=<propertyValue>
+                        Producer property value
   -r, --registry-url=<serviceRegistry>
                         The url for Red Hat's service registry.
   -s, --schema-path=<schemaPath>

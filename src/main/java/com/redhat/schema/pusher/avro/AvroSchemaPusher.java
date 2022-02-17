@@ -97,21 +97,27 @@ public final class AvroSchemaPusher implements SchemaPusher {
    * @param cli the {@link PushCli} instance for creating the {@link Properties} instance with.
    * @return an instance of {@link Properties}.
    */
+  // CHECKSTYLE.OFF: VariableDeclarationUsageDistance
   private Properties createProps(final PushCli cli) {
     // get info from the cli
     var kafkaBootstrapUrl = cleanUrlEnd.apply(cli.getKafkaBootstrap());
     var registryUrl = cleanUrlEnd.andThen(concatConfluentMap).apply(cli.getServiceRegistry());
     var namingStrategy = cli.getNamingStrategy();
+    var propertyAggregators = cli.getPropertyAggregators();
     var truststoreInfo = cli.getTruststoreInfo();
     var keystoreInfo = cli.getKeystoreInfo();
     // create, populate, and return the properties instance
     var props = new Properties();
+    // standard configuration (can be replaced with custom properties by the user)
+    props.put(ProducerConfig.ACKS_CONFIG, "all");
+    props.put(ProducerConfig.RETRIES_CONFIG, 0);
+    // add custom producer properties set by the user
+    propertyAggregators.forEach(agg -> props.put(agg.getPropertyKey(), agg.getPropertyValue()));
+    // the rest of the values will overwrite custom properties set by the user
     // set the kafka bootstrap and rh service registry urls
     props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaBootstrapUrl);
     props.put(AbstractKafkaSchemaSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG, registryUrl);
-    // standard configuration
-    props.put(ProducerConfig.ACKS_CONFIG, "all");
-    props.put(ProducerConfig.RETRIES_CONFIG, 0);
+    // use the string serializer for the keys
     props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
     // use custom serializer for only serializing the schema and not the object
     props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, AvroCustomSerializer.class);
