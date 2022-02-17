@@ -74,7 +74,7 @@ docker run --rm -it quay.io/ecosystem-appeng/schema-pusher:latest --help
 prints:
 <!-- editorconfig-checker-disable-max-line-length -->
 ```text
-Tool for decoding base64 schema files and procude kafka messages for the specified topics.
+Tool for decoding base64 schema files and producing Kafka messages for the specified topics.
 The schema files will be pushed to Red Hat's service registry via the attached Java application.
 ------------------------------------------------------------------------------------------------
 Usage: -h/--help

@@ -5,7 +5,7 @@ declare -a naming_strategies=("topic" "record" "topic_record")
 
 show_usage() {
   echo ""
-  echo "Tool for decoding base64 schema files and procude kafka messages for the specified topics."
+  echo "Tool for decoding base64 schema files and producing Kafka messages for the specified topics."
   echo "The schema files will be pushed to Red Hat's service registry via the attached Java application."
   echo "------------------------------------------------------------------------------------------------"
   echo "Usage: -h/--help"
@@ -17,8 +17,8 @@ show_usage() {
   echo "--strategy, (optional) subject naming strategy, [${naming_strategies[*]}] (default: topic_record)."
   echo "--topic (mandatory), topic/s to push the schemas to (repeatable in correlation with schema)."
   echo "--schema, (mandatory) base64 encoded schema file (repeatable in correlation with topic)."
-  echo "--propkey, (optional) a string key to set for the procucer (repeatable in correlation with propvalue)."
-  echo "--propValue, (optional) a string value to set for the procucer (repeatable in correlation with propkey)."
+  echo "--propkey, (optional) a string key to set for the producer (repeatable in correlation with propvalue)."
+  echo "--propValue, (optional) a string value to set for the producer (repeatable in correlation with propkey)."
   echo "--truststore, (optional) base64 encoded pkcs12 truststore for identifying the bootstrap (inclusive with truststorePassword)."
   echo "--truststorePassword (optional) password for accessing the pkcs12 truststore (inclusive with truststore)."
   echo "--keystore, (optional) base64 encoded pkcs12 keystore for identifying to the bootstrap (inclusive with keystorePassword)."
