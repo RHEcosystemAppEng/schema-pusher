@@ -26,6 +26,8 @@ class Cli_options_and_utility_methods_Test {
   private static final String FAKE_TRUSTSTORE_PASSWORD = "hideme123#@!";
   private static final String FAKE_KEYSTORE_FILE = "/path/to/keystore.p12";
   private static final String FAKE_KEYSTORE_PASSWORD = "hidemetoo123#@!";
+  private static final String FAKE_CUSTOM_PROPERTY_KEY = "custom key";
+  private static final String FAKE_CUSTOM_PROPERTY_VALUE = "custom value";
 
   private PushCli sut;
   private CommandLine cmd;
@@ -52,6 +54,8 @@ class Cli_options_and_utility_methods_Test {
       final String strategyKey,
       final String topicKey,
       final String schemaPathKey,
+      final String propertyKey,
+      final String propertyValue,
       final String truststoreFileKey,
       final String truststorePasswordKey,
       final String keystoreFileKey,
@@ -68,6 +72,8 @@ class Cli_options_and_utility_methods_Test {
                     strategyKey + "=" + strategy.toString(),
                     topicKey + "=" + FAKE_TOPIC,
                     schemaPathKey + "=" + FAKE_SCHEMA_FILE,
+                    propertyKey + "=" + FAKE_CUSTOM_PROPERTY_KEY,
+                    propertyValue + "=" + FAKE_CUSTOM_PROPERTY_VALUE,
                     truststoreFileKey + "=" + FAKE_TRUSTSTORE_FILE,
                     truststorePasswordKey + "=" + FAKE_TRUSTSTORE_PASSWORD,
                     keystoreFileKey + "=" + FAKE_KEYSTORE_FILE,
@@ -89,12 +95,14 @@ class Cli_options_and_utility_methods_Test {
         "--naming-strategy",
         "--topic",
         "--schema-path",
+        "--property-key",
+        "--property-value",
         "--truststore-file",
         "--truststore-password",
         "--keystore-file",
         "--keystore-password",
         NamingStrategy.TOPIC_RECORD),
-      arguments("-b", "-r", "-n", "-t", "-s", "--tf", "--tp", "--kf", "--kp", NamingStrategy.TOPIC_RECORD));
+      arguments("-b", "-r", "-n", "-t", "-s", "--pk", "--pv", "--tf", "--tp", "--kf", "--kp", NamingStrategy.TOPIC_RECORD));
   }
 
   @Test
@@ -226,5 +234,33 @@ class Cli_options_and_utility_methods_Test {
                     "-s=" + FAKE_SCHEMA_FILE,
                     "--kp=" + FAKE_KEYSTORE_PASSWORD))
         .withMessage("Error: Missing required argument(s): --keystore-file=<keystoreFile>");
+  }
+
+  @Test
+  void parsing_while_specifying_the_property_key_but_not_the_value_should_throw_an_exception() {
+    assertThatExceptionOfType(MissingParameterException.class)
+        .isThrownBy(
+            () ->
+                cmd.parseArgs(
+                    "-b=" + FAKE_BOOTSTRAP,
+                    "-r=" + FAKE_REGISTRY,
+                    "-t=" + FAKE_TOPIC,
+                    "-s=" + FAKE_SCHEMA_FILE,
+                    "--pk=" + FAKE_CUSTOM_PROPERTY_KEY))
+        .withMessage("Error: Missing required argument(s): --property-value=<propertyValue>");
+  }
+
+  @Test
+  void parsing_while_specifying_the_property_value_but_not_the_key_should_throw_an_exception() {
+    assertThatExceptionOfType(MissingParameterException.class)
+        .isThrownBy(
+            () ->
+                cmd.parseArgs(
+                    "-b=" + FAKE_BOOTSTRAP,
+                    "-r=" + FAKE_REGISTRY,
+                    "-t=" + FAKE_TOPIC,
+                    "-s=" + FAKE_SCHEMA_FILE,
+                    "--pv=" + FAKE_CUSTOM_PROPERTY_VALUE))
+        .withMessage("Error: Missing required argument(s): --property-key=<propertyKey>");
   }
 }

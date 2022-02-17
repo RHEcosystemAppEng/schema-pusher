@@ -33,6 +33,9 @@ public abstract class PushCli implements Callable<Integer> {
   private List<TopicSchemaAggregator> topicSchemaAggregators;
 
   @ArgGroup(exclusive = false, multiplicity = "0..1")
+  private List<PropertyAggregator> propertyAggregators;
+
+  @ArgGroup(exclusive = false, multiplicity = "0..1")
   private TruststoreInfo truststoreInfo;
 
   @ArgGroup(exclusive = false, multiplicity = "0..1")
@@ -67,6 +70,37 @@ public abstract class PushCli implements Callable<Integer> {
      */
     public Path getSchemaPath() {
       return this.schemaPath;
+    }
+  }
+
+  /** Use for aggregating propety key and value. */
+  public static final class PropertyAggregator {
+    @Option(
+        names = {"--pk", "--property-key"},
+        description = "Producer property key",
+        required = true)
+    private String propertyKey;
+
+    @Option(
+        names = {"--pv", "--property-value"},
+        description = "Producer property value",
+        required = true)
+    private String propertyValue;
+
+    /**
+     * Returns the property key.
+     * @return the property key.
+     */
+    public String getPropertyKey() {
+      return this.propertyKey;
+    }
+
+    /**
+     * Returns the property value.
+     * @return the property value.
+     */
+    public String getPropertyValue() {
+      return this.propertyValue;
     }
   }
 
@@ -169,6 +203,15 @@ public abstract class PushCli implements Callable<Integer> {
    */
   public List<TopicSchemaAggregator> getTopicSchemaAggregators() {
     return this.topicSchemaAggregators;
+  }
+
+  /**
+   * Get the list of property aggregators as specified by the user.
+   *
+   * @return a {@link List} of {@link PropertyAggregator} instances.
+   */
+  public List<PropertyAggregator> getPropertyAggregators() {
+    return this.propertyAggregators;
   }
 
   /**

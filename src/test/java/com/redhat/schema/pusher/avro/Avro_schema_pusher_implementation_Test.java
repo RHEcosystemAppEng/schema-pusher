@@ -18,6 +18,7 @@ import static org.springframework.test.util.ReflectionTestUtils.setField;
 import com.redhat.schema.pusher.NamingStrategy;
 import com.redhat.schema.pusher.PushCli;
 import com.redhat.schema.pusher.PushCli.KeystoreInfo;
+import com.redhat.schema.pusher.PushCli.PropertyAggregator;
 import com.redhat.schema.pusher.PushCli.TruststoreInfo;
 import com.redhat.schema.pusher.TopicAndSchema;
 import java.io.IOException;
@@ -58,6 +59,8 @@ class Avro_schema_pusher_implementation_Test {
   private static final String FAKE_TRUSTSTORE_PASSWORD = "hideme123#@!";
   private static final String FAKE_KEYSTORE_FILE = "/path/to/keystore.p12";
   private static final String FAKE_KEYSTORE_PASSWORD = "hidemetoo123#@!";
+  private static final String FAKE_CUSTOM_PROPERTY_KEY = "custom key";
+  private static final String FAKE_CUSTOM_PROPERTY_VALUE = "custom value";
 
   @Captor private ArgumentCaptor<ProducerRecord<String, IndexedRecord>> prodRecCaptore;
   @Mock private Callback mockCallback;
@@ -167,6 +170,42 @@ class Avro_schema_pusher_implementation_Test {
         .hasSize(1);
   }
 
+  @Test
+  void pushing_one_file_and_one_topic_with_custom_properties_should_result_in_one_producer_records_sent(
+      @Mock final PropertyAggregator mockPropertyAggregator1,
+      @Mock final PropertyAggregator mockPropertyAggregator2) throws URISyntaxException {
+    // stub the first property aggregator mock to return a custom key-value
+    given(mockPropertyAggregator1.getPropertyKey()).willReturn(FAKE_CUSTOM_PROPERTY_KEY);
+    given(mockPropertyAggregator1.getPropertyValue()).willReturn(FAKE_CUSTOM_PROPERTY_VALUE);
+    // stub the second property aggregator mock to overwrite the bootstrap server
+    // some values, like the boostrap server will be overwritten and not set as a custom property
+    given(mockPropertyAggregator2.getPropertyKey()).willReturn(FAKE_NOT_SECURED_BOOTSTRAP);
+    given(mockPropertyAggregator2.getPropertyValue()).willReturn("this value will be overwritten");
+    // stub the cli
+    given(mockCli.getKafkaBootstrap()).willReturn(FAKE_NOT_SECURED_BOOTSTRAP);
+    given(mockCli.getServiceRegistry()).willReturn(FAKE_REGISTRY);
+    given(mockCli.getNamingStrategy()).willReturn(FAKE_NAMING_STRATEGY);
+    given(mockCli.getPropertyAggregators()).willReturn(List.of(mockPropertyAggregator1, mockPropertyAggregator2));
+    // instantiate the sut with the fake info
+    sut = new AvroSchemaPusher(mockCli);
+    // turn off the sut's logger to avoid polluting the build log
+    ((Logger) getField(sut, "LOGGER")).setLevel(Level.OFF);
+    // stub the private di context
+    setField(sut, "context", mockContext);
+    // stub the mocked context to return a mocked callback for the specific arguments
+    given(mockContext.getBean(eq(Callback.class), any(Logger.class), eq("test_schema1.avsc"), eq(FAKE_TOPIC1))).willReturn(mockCallback);
+    // given the di context will return the mocked producer as bean per the properties match
+    given(mockContext.getBean(eq(KafkaProducer.class), argThat(customPropertiesMatcher))).willReturn(mockProducer);
+    // given the following two schema test files
+    var testSchema1 = getResourceAbsPath("com/redhat/schema/pusher/avro/schemas/test_schema1.avsc");
+    // when invoking the push method with two topics and two schema files
+    sut.push(List.of(new TopicAndSchema(FAKE_TOPIC1, testSchema1)));
+    // one invocation of the send method with expected arguments including the mocked callback
+    then(mockProducer).should().send(argThat(prodRecMatcher(FAKE_TOPIC1, "TestingSchema1Name")::test), eq(mockCallback));
+    // and one invocation for flushing the producer cache
+    then(mockProducer).should().flush();
+  }
+
   private ArgumentMatcher<Properties> securedPropertiesMatcher =
       p -> FAKE_SECURED_BOOTSTRAP.equals(p.getProperty("bootstrap.servers"))
             && (FAKE_REGISTRY + "apis/ccompat/v6").equals(p.getProperty("schema.registry.url"))
@@ -198,6 +237,15 @@ class Avro_schema_pusher_implementation_Test {
             && FAKE_KEYSTORE_FILE.equals(p.getProperty("ssl.keystore.location"))
             && FAKE_KEYSTORE_PASSWORD.equals(p.getProperty("ssl.keystore.password"))
             && "PKCS12".equals(p.getProperty("ssl.keystore.type"));
+
+  private ArgumentMatcher<Properties> customPropertiesMatcher =
+      p -> FAKE_NOT_SECURED_BOOTSTRAP_CLEAN.equals(p.getProperty("bootstrap.servers"))
+            && (FAKE_REGISTRY + "apis/ccompat/v6").equals(p.getProperty("schema.registry.url"))
+            && "all".equals(p.getProperty("acks"))
+            && 0 == (int) p.get("retries")
+            && StringSerializer.class.equals(p.get("key.serializer"))
+            && FAKE_NAMING_STRATEGY.getStrategy().equals(p.get("value.subject.name.strategy"))
+            && p.getProperty(FAKE_CUSTOM_PROPERTY_KEY).equals(FAKE_CUSTOM_PROPERTY_VALUE);
 
   private Predicate<ProducerRecord<String, IndexedRecord>> prodRecMatcher(
       final String topic, final String name) {
