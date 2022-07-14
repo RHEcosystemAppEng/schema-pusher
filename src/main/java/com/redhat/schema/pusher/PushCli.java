@@ -3,6 +3,7 @@ package com.redhat.schema.pusher;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.concurrent.Callable;
+import javax.annotation.Nullable;
 import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Option;
 
@@ -32,7 +33,7 @@ public abstract class PushCli implements Callable<Integer> {
   @ArgGroup(exclusive = false, multiplicity = "1..*")
   private List<TopicSchemaAggregator> topicSchemaAggregators;
 
-  @ArgGroup(exclusive = false, multiplicity = "0..1")
+  @ArgGroup(exclusive = false, multiplicity = "0..*")
   private List<PropertyAggregator> propertyAggregators;
 
   @ArgGroup(exclusive = false, multiplicity = "0..1")
@@ -210,6 +211,7 @@ public abstract class PushCli implements Callable<Integer> {
    *
    * @return a {@link List} of {@link PropertyAggregator} instances.
    */
+  @Nullable
   public List<PropertyAggregator> getPropertyAggregators() {
     return this.propertyAggregators;
   }
@@ -219,6 +221,7 @@ public abstract class PushCli implements Callable<Integer> {
    *
    * @return a {@link TruststoreInfo} instance.
    */
+  @Nullable
   public TruststoreInfo getTruststoreInfo() {
     return this.truststoreInfo;
   }
@@ -228,6 +231,7 @@ public abstract class PushCli implements Callable<Integer> {
    *
    * @return a {@link KeystoreInfo} instance.
    */
+  @Nullable
   public KeystoreInfo getKeystoreInfo() {
     return this.keystoreInfo;
   }

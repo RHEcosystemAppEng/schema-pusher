@@ -18,7 +18,7 @@ show_usage() {
   echo "--topic (mandatory), topic/s to push the schemas to (repeatable in correlation with schema)."
   echo "--schema, (mandatory) base64 encoded schema file (repeatable in correlation with topic)."
   echo "--propkey, (optional) a string key to set for the producer (repeatable in correlation with propvalue)."
-  echo "--propValue, (optional) a string value to set for the producer (repeatable in correlation with propkey)."
+  echo "--propvalue, (optional) a string value to set for the producer (repeatable in correlation with propkey)."
   echo "--truststore, (optional) base64 encoded pkcs12 truststore for identifying the bootstrap (inclusive with truststorePassword)."
   echo "--truststorePassword (optional) password for accessing the pkcs12 truststore (inclusive with truststore)."
   echo "--keystore, (optional) base64 encoded pkcs12 keystore for identifying to the bootstrap (inclusive with keystorePassword)."

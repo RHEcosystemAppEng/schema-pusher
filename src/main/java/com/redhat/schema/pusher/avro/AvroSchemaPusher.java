@@ -111,8 +111,11 @@ public final class AvroSchemaPusher implements SchemaPusher {
     // standard configuration (can be replaced with custom properties by the user)
     props.put(ProducerConfig.ACKS_CONFIG, "all");
     props.put(ProducerConfig.RETRIES_CONFIG, 0);
-    // add custom producer properties set by the user
-    propertyAggregators.forEach(agg -> props.put(agg.getPropertyKey(), agg.getPropertyValue()));
+    // if supplied properties info
+    if (nonNull(propertyAggregators)) {
+      // add custom producer properties set by the user
+      propertyAggregators.forEach(agg -> props.put(agg.getPropertyKey(), agg.getPropertyValue()));
+    }
     // the rest of the values will overwrite custom properties set by the user
     // set the kafka bootstrap and rh service registry urls
     props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaBootstrapUrl);
