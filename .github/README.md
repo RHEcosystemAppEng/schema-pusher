@@ -1,12 +1,8 @@
 # Schema Pusher
 
-<!-- markdownlint-disable -->
-<!-- editorconfig-checker-disable -->
 <a href="https://quay.io/repository/ecosystem-appeng/schema-pusher">
     <img src="https://raw.githubusercontent.com/RHEcosystemAppEng/schema-pusher/main/images/docker_run_flow.png" width="700" height="300" alt="">
 </a>
-<!-- editorconfig-checker-enable -->
-<!-- markdownlint-restore -->
 
 [Red Hat's Service Registry][10], part of [Red Hat's Integration][11] services portfolio,</br>
 is a *Kafka* based schema database.</br>
@@ -72,7 +68,7 @@ docker run --rm -it quay.io/ecosystem-appeng/schema-pusher:latest --help
 ```
 
 prints:
-<!-- editorconfig-checker-disable-max-line-length -->
+
 ```text
 Tool for decoding base64 schema files and producing Kafka messages for the specified topics.
 The schema files will be pushed to Red Hat's service registry via the attached Java application.
@@ -107,7 +103,6 @@ Example:
 
 This should result in each schema file being produced to its respective topic using the specified naming strategy.
 ```
-<!-- editorconfig-checker-enable-max-line-length -->
 
 ## Producer property keys
 
@@ -232,15 +227,12 @@ Push schemas to Red Hat's Service Registry
 | `mvn verify`            | tests, build, verifies code formatting.   |
 | `mvn k8s:build`         | builds the docker image.                  |
 | `mvn k8s:push`          | push the docker image to [Quay.io][15].   |
-| `mvn help:all-profiles` | will display the existing profiles.       |
-
-> The *dev* profile will turn off enforcing.</br>
 
 ### CI
 
 | Workflow           | Trigger                             | Description                                    |
 | ------------------ | ----------------------------------- | ---------------------------------------------- |
-| [Pull Request][62] | pull requests                       | lint and test the project                      |
+| [Pull Request][62] | pull requests                       | build and verifies the project                 |
 | [Release][63]      | push semver tags to the main branch | create a github release for the triggering tag |
 | [Stage][64]        | manually : push to the main branch  | build the project including the docker image   |
 
@@ -291,7 +283,6 @@ this will automatically create a *GitHub Release* for the *1.2.3* tag with the t
 - [Red Hat AMQ][21]
 - [Red Hat Integration][22]
 
-<!-- editorconfig-checker-disable-max-line-length -->
 <!-- links -->
 [10]: https://www.redhat.com/en/technologies/cloud-computing/openshift/openshift-service-registry
 [11]: https://www.redhat.com/en/products/integration
@@ -316,7 +307,6 @@ this will automatically create a *GitHub Release* for the *1.2.3* tag with the t
 [57]: ../src/main/java/com/redhat/schema/pusher/SchemaPusher.java
 [58]: ../src/main/java/com/redhat/schema/pusher/avro/AvroSchemaPusher.java
 [59]: ../src/main/java/com/redhat/schema/pusher/MainApp.java
-[60]: ../src/main/java/com/redhat/schema/pusher/MainApp.java
 [61]: ../src/main/docker/Dockerfile
 [62]: workflows/pr.yml
 [63]: workflows/release.yml

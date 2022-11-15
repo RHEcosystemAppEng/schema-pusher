@@ -100,7 +100,6 @@ if ! [[ ${naming_strategies[*]} =~ $strategy ]]; then
 fi
 
 # verify minimum of 1 topic
-# shellcheck disable=SC2128
 if [ -z "$topics" ]; then
   echo "at least one topic is required"
   show_usage
@@ -108,7 +107,6 @@ if [ -z "$topics" ]; then
 fi
 
 # verify minimum of 1 schema
-# shellcheck disable=SC2128
 if [ -z "$schemas" ]; then
   echo "at least one schema is required"
   show_usage
@@ -174,5 +172,4 @@ ret_code=$(eval "$java_cmd")
 rm -r $dest_dir
 
 # exit with the java app's return code
-# shellcheck disable=SC2086
 exit $ret_code

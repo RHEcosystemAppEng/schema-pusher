@@ -38,17 +38,15 @@
     <maven-enforcer-plugin.version>3.0.0</maven-enforcer-plugin.version>
     <maven-jar-plugin.version>3.2.0</maven-jar-plugin.version>
     <maven-resources-plugin.version>3.2.0</maven-resources-plugin.version>
+    <maven-surefire-plugin.version>3.0.0-M7</maven-surefire-plugin.version>
     <fmt-maven-plugin.version>2.19</fmt-maven-plugin.version>
     <git-commit-id-maven-plugin.version>5.0.0</git-commit-id-maven-plugin.version>
-    <junit-platform-maven-plugin.version>1.1.6</junit-platform-maven-plugin.version>
     <versions-maven-plugin.version>2.8.1</versions-maven-plugin.version>
     <!-- Dependency Convergence -->
-    <apiguardian.version>1.1.2</apiguardian.version>
     <commons-cli.version>1.5.0</commons-cli.version>
     <commons-compress.version>1.21</commons-compress.version>
     <metrics-core.version>4.2.8</metrics-core.version>
     <jackson.version>2.13.1</jackson.version>
-    <junit-platform.version>1.8.2</junit-platform.version>
     <osgi.version>6.0.0</osgi.version>
     <scala.version>2.13.8</scala.version>
     <snappy-java.version>1.1.8.4</snappy-java.version>
@@ -143,21 +141,6 @@
         <version>${springframework.version}</version>
       </dependency>
       <!-- Dependency Convergence -->
-      <dependency>
-        <groupId>org.junit.platform</groupId>
-        <artifactId>junit-platform-commons</artifactId>
-        <version>${junit-platform.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.junit.platform</groupId>
-        <artifactId>junit-platform-launcher</artifactId>
-        <version>${junit-platform.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apiguardian</groupId>
-        <artifactId>apiguardian-api</artifactId>
-        <version>${apiguardian.version}</version>
-      </dependency>
       <dependency>
         <groupId>com.fasterxml.jackson.core</groupId>
         <artifactId>jackson-annotations</artifactId>
@@ -274,6 +257,7 @@
 
     <pluginManagement>
       <plugins>
+
         <!-- Apache Plugins -->
         <plugin>
           <artifactId>maven-assembly-plugin</artifactId>
@@ -299,17 +283,21 @@
           <artifactId>maven-resources-plugin</artifactId>
           <version>${maven-resources-plugin.version}</version>
         </plugin>
+        <plugin>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>${maven-surefire-plugin.version}</version>
+          <configuration>
+            <argLine>-Xshare:off</argLine>
+          </configuration>
+        </plugin>
+
         <!-- Third Party Plugins -->
         <plugin>
           <groupId>com.spotify.fmt</groupId>
           <artifactId>fmt-maven-plugin</artifactId>
           <version>${fmt-maven-plugin.version}</version>
         </plugin>
-        <plugin>
-          <groupId>de.sormuras.junit</groupId>
-          <artifactId>junit-platform-maven-plugin</artifactId>
-          <version>${junit-platform-maven-plugin.version}</version>
-        </plugin>
+
         <plugin>
           <groupId>io.github.git-commit-id</groupId>
           <artifactId>git-commit-id-maven-plugin</artifactId>
@@ -323,11 +311,13 @@
             <commitIdGenerationMode>full</commitIdGenerationMode>
           </configuration>
         </plugin>
+
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>versions-maven-plugin</artifactId>
           <version>${versions-maven-plugin.version}</version>
         </plugin>
+
         <plugin>
           <groupId>org.eclipse.jkube</groupId>
           <artifactId>kubernetes-maven-plugin</artifactId>
@@ -349,6 +339,7 @@
             </images>
           </configuration>
         </plugin>
+
       </plugins>
     </pluginManagement>
 
@@ -366,27 +357,6 @@
         </executions>
       </plugin>
 
-      <plugin>
-        <groupId>de.sormuras.junit</groupId>
-        <artifactId>junit-platform-maven-plugin</artifactId>
-        <extensions>true</extensions>
-        <configuration>
-          <isolation>ABSOLUTE</isolation>
-          <executor>JAVA</executor>
-          <javaOptions>
-            <additionalOptions>
-              <cds>-Xshare:off</cds>
-            </additionalOptions>
-          </javaOptions>
-          <parameters>
-            <junit.jupiter.execution.parallel.enabled>true</junit.jupiter.execution.parallel.enabled>
-            <junit.jupiter.execution.parallel.mode.default>concurrent</junit.jupiter.execution.parallel.mode.default>
-            <!-- editorconfig-checker-disable-max-line-length -->
-            <junit.jupiter.displayname.generator.default>org.junit.jupiter.api.DisplayNameGenerator$ReplaceUnderscores</junit.jupiter.displayname.generator.default>
-            <!-- editorconfig-checker-enable-max-line-length -->
-          </parameters>
-        </configuration>
-      </plugin>
 
       <plugin>
         <artifactId>maven-enforcer-plugin</artifactId>
@@ -410,9 +380,6 @@
             <requireJavaVersion>
               <version>[17,)</version>
             </requireJavaVersion>
-            <requireMavenVersion>
-              <version>[3.8,)</version>
-            </requireMavenVersion>
             <banDuplicateClasses />
             <banCircularDependencies />
           </rules>
@@ -422,9 +389,6 @@
       <plugin>
         <groupId>com.spotify.fmt</groupId>
         <artifactId>fmt-maven-plugin</artifactId>
-        <configuration>
-          <failOnError>error</failOnError>
-        </configuration>
         <executions>
             <execution>
                 <goals>
@@ -466,26 +430,5 @@
 
     </plugins>
   </build>
-
-  <profiles>
-    <!-- use this profile for development stage. -->
-    <profile>
-      <id>dev</id>
-      <properties>
-        <enforcer.skip>true</enforcer.skip>
-      </properties>
-      <build>
-        <plugins>
-          <plugin>
-            <artifactId>maven-compiler-plugin</artifactId>
-            <configuration>
-              <failOnWarning>false</failOnWarning>
-            </configuration>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-
-  </profiles>
 
 </project>
