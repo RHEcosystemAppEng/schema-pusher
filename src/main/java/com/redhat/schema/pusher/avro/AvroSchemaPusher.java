@@ -60,7 +60,7 @@ public final class AvroSchemaPusher implements SchemaPusher {
   @SuppressWarnings("unchecked")
   public ReturnCode push(final List<TopicAndSchema> topicAndSchemaRecords) {
     LOGGER.info("loading the producer");
-    try (var producer = context.getBean(KafkaProducer.class, producerProps)) {
+    try (var producer = context.getBean(SchemaProducer.class, producerProps)) {
       topicAndSchemaRecords.parallelStream().forEach(rec -> {
         var fileName = rec.schema().toFile().getName();
         LOGGER.info(
@@ -74,8 +74,7 @@ public final class AvroSchemaPusher implements SchemaPusher {
           var schema = parser.parse(Files.newInputStream(rec.schema()));
           var avroRec = new GenericData.Record(schema);
           var prodRec = new ProducerRecord<String, IndexedRecord>(rec.topic(), avroRec);
-          var callback = context.getBean(Callback.class, LOGGER, fileName, rec.topic());
-          producer.send(prodRec, callback);
+          producer.send(prodRec);
         } catch (final IOException exc) {
           LOGGER.log(
               Level.SEVERE,
@@ -83,7 +82,6 @@ public final class AvroSchemaPusher implements SchemaPusher {
               () -> String.format("failed to push '%s' to topic '%s'", fileName, rec.topic()));
         }
       });
-      producer.flush();
       return ReturnCode.SUCCESS;
     } catch (final Exception exc) {
       LOGGER.log(Level.SEVERE, exc, () -> "producing messages to failed");
