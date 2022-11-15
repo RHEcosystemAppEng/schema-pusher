@@ -4,11 +4,11 @@ package com.redhat.schema.pusher.avro;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
+import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
@@ -32,8 +32,6 @@ import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.avro.generic.IndexedRecord;
-import org.apache.kafka.clients.producer.Callback;
-import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.junit.jupiter.api.Test;
@@ -63,8 +61,7 @@ class Avro_schema_pusher_implementation_Test {
   private static final String FAKE_CUSTOM_PROPERTY_VALUE = "custom value";
 
   @Captor private ArgumentCaptor<ProducerRecord<String, IndexedRecord>> prodRecCaptore;
-  @Mock private Callback mockCallback;
-  @Mock private KafkaProducer<String, IndexedRecord> mockProducer;
+  @Mock private SchemaProducer<String, IndexedRecord> mockProducer;
   @Mock private ApplicationContext mockContext;
   @Mock private PushCli mockCli;
   private AvroSchemaPusher sut;
@@ -80,20 +77,19 @@ class Avro_schema_pusher_implementation_Test {
     sut = new AvroSchemaPusher(mockCli);
     // stub the private di context
     setField(sut, "context", mockContext);
-    // stub the mocked context to return a mocked callback for the specific arguments
-    given(mockContext.getBean(eq(Callback.class), any(Logger.class), eq("test_schema1.avsc"), eq(FAKE_TOPIC1))).willReturn(mockCallback);
     // turn off the sut's logger to avoid polluting the build log
     ((Logger) getField(sut, "LOGGER")).setLevel(Level.OFF);
     // short-circuit the producer to throw an exception
-    given(mockProducer.send(any(ProducerRecord.class), eq(mockCallback))).willThrow(new UncheckedIOException(new IOException("fake exception")));
+    willThrow(new UncheckedIOException(new IOException("fake exception")))
+        .given(mockProducer).send(any(ProducerRecord.class));
     // given the di context will return the mocked producer as bean per the properties match
-    given(mockContext.getBean(eq(KafkaProducer.class), argThat(securedPropertiesMatcher))).willReturn(mockProducer);
+    given(mockContext.getBean(eq(SchemaProducer.class), argThat(securedPropertiesMatcher))).willReturn(mockProducer);
     // given the following test schema
     var testSchema = getResourceAbsPath("com/redhat/schema/pusher/avro/schemas/test_schema1.avsc");
     // when invoking the push method with it no exceptions should be thrown
     assertThatNoException().isThrownBy(() -> sut.push(List.of(new TopicAndSchema(FAKE_TOPIC1, testSchema))));
     // and the mock producer was invoked
-    then(mockProducer).should().send(any(ProducerRecord.class), eq(mockCallback));
+    then(mockProducer).should().send(any(ProducerRecord.class));
   }
 
   @Test
@@ -118,18 +114,14 @@ class Avro_schema_pusher_implementation_Test {
     ((Logger) getField(sut, "LOGGER")).setLevel(Level.OFF);
     // stub the private di context
     setField(sut, "context", mockContext);
-    // stub the mocked context to return a mocked callback for the specific arguments
-    given(mockContext.getBean(eq(Callback.class), any(Logger.class), eq("test_schema1.avsc"), eq(FAKE_TOPIC1))).willReturn(mockCallback);
     // given the di context will return the mocked producer as bean per the properties match
-    given(mockContext.getBean(eq(KafkaProducer.class), argThat(selfSingedPropertiesMatcher))).willReturn(mockProducer);
+    given(mockContext.getBean(eq(SchemaProducer.class), argThat(selfSingedPropertiesMatcher))).willReturn(mockProducer);
     // given the following two schema test files
     var testSchema1 = getResourceAbsPath("com/redhat/schema/pusher/avro/schemas/test_schema1.avsc");
     // when invoking the push method with two topics and two schema files
     sut.push(List.of(new TopicAndSchema(FAKE_TOPIC1, testSchema1)));
     // one invocation of the send method with expected arguments including the mocked callback
-    then(mockProducer).should().send(argThat(prodRecMatcher(FAKE_TOPIC1, "TestingSchema1Name")::test), eq(mockCallback));
-    // and one invocation for flushing the producer cache
-    then(mockProducer).should().flush();
+    then(mockProducer).should().send(argThat(prodRecMatcher(FAKE_TOPIC1, "TestingSchema1Name")::test));
   }
 
   @Test
@@ -144,10 +136,8 @@ class Avro_schema_pusher_implementation_Test {
     ((Logger) getField(sut, "LOGGER")).setLevel(Level.OFF);
     // stub the private di context
     setField(sut, "context", mockContext);
-    // stub the mocked context to return a mocked callback for the specific arguments
-    given(mockContext.getBean(eq(Callback.class), any(Logger.class), anyString(), anyString())).willReturn(mockCallback);
     // given the di context will return the mocked producer as bean per the properties match
-    given(mockContext.getBean(eq(KafkaProducer.class), argThat(notSecuredPropertiesMatcher))).willReturn(mockProducer);
+    given(mockContext.getBean(eq(SchemaProducer.class), argThat(notSecuredPropertiesMatcher))).willReturn(mockProducer);
     // given the following two schema test files
     var testSchema1 = getResourceAbsPath("com/redhat/schema/pusher/avro/schemas/test_schema1.avsc");
     var testSchema2 = getResourceAbsPath("com/redhat/schema/pusher/avro/schemas/test_schema2.avsc");
@@ -158,9 +148,7 @@ class Avro_schema_pusher_implementation_Test {
     // then producer should be invoked in order
     var mockProdOrder = inOrder(mockProducer);
     // four invocations of the send method, one per schema+topic
-    then(mockProducer).should(mockProdOrder, times(2)).send(prodRecCaptore.capture(), eq(mockCallback));
-    // and one invocation for flushing the producer cache
-    then(mockProducer).should(mockProdOrder).flush();
+    then(mockProducer).should(mockProdOrder, times(2)).send(prodRecCaptore.capture());
     // verify each schema was sent to each topic (schema names are from in the schema files)
     assertThat(prodRecCaptore.getAllValues())
         .filteredOn(prodRecMatcher(FAKE_TOPIC1, "TestingSchema1Name"))
@@ -192,18 +180,14 @@ class Avro_schema_pusher_implementation_Test {
     ((Logger) getField(sut, "LOGGER")).setLevel(Level.OFF);
     // stub the private di context
     setField(sut, "context", mockContext);
-    // stub the mocked context to return a mocked callback for the specific arguments
-    given(mockContext.getBean(eq(Callback.class), any(Logger.class), eq("test_schema1.avsc"), eq(FAKE_TOPIC1))).willReturn(mockCallback);
     // given the di context will return the mocked producer as bean per the properties match
-    given(mockContext.getBean(eq(KafkaProducer.class), argThat(customPropertiesMatcher))).willReturn(mockProducer);
+    given(mockContext.getBean(eq(SchemaProducer.class), argThat(customPropertiesMatcher))).willReturn(mockProducer);
     // given the following two schema test files
     var testSchema1 = getResourceAbsPath("com/redhat/schema/pusher/avro/schemas/test_schema1.avsc");
     // when invoking the push method with two topics and two schema files
     sut.push(List.of(new TopicAndSchema(FAKE_TOPIC1, testSchema1)));
     // one invocation of the send method with expected arguments including the mocked callback
-    then(mockProducer).should().send(argThat(prodRecMatcher(FAKE_TOPIC1, "TestingSchema1Name")::test), eq(mockCallback));
-    // and one invocation for flushing the producer cache
-    then(mockProducer).should().flush();
+    then(mockProducer).should().send(argThat(prodRecMatcher(FAKE_TOPIC1, "TestingSchema1Name")::test));
   }
 
   private ArgumentMatcher<Properties> securedPropertiesMatcher =
