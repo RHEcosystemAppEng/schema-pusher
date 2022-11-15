@@ -20,8 +20,6 @@ import org.apache.avro.Schema.Parser;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.IndexedRecord;
 import org.apache.kafka.clients.CommonClientConfigs;
-import org.apache.kafka.clients.producer.Callback;
-import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.config.SslConfigs;
@@ -61,27 +59,30 @@ public final class AvroSchemaPusher implements SchemaPusher {
   public ReturnCode push(final List<TopicAndSchema> topicAndSchemaRecords) {
     LOGGER.info("loading the producer");
     try (var producer = context.getBean(SchemaProducer.class, producerProps)) {
-      topicAndSchemaRecords.parallelStream().forEach(rec -> {
-        var fileName = rec.schema().toFile().getName();
-        LOGGER.info(
-            () -> String.format(
-              "parallel stream for topic '%s' and schema '%s' running on thread '%s'",
-              rec.topic(),
-              fileName,
-              Thread.currentThread().getName()));
-        try {
-          var parser = new Parser();
-          var schema = parser.parse(Files.newInputStream(rec.schema()));
-          var avroRec = new GenericData.Record(schema);
-          var prodRec = new ProducerRecord<String, IndexedRecord>(rec.topic(), avroRec);
-          producer.send(prodRec);
-        } catch (final IOException exc) {
-          LOGGER.log(
-              Level.SEVERE,
-              exc,
-              () -> String.format("failed to push '%s' to topic '%s'", fileName, rec.topic()));
-        }
-      });
+      topicAndSchemaRecords.parallelStream()
+          .forEach(
+              rec -> {
+                var fileName = rec.schema().toFile().getName();
+                LOGGER.info(
+                    () ->
+                        String.format(
+                            "parallel stream for topic '%s' and schema '%s' running on thread '%s'",
+                            rec.topic(), fileName, Thread.currentThread().getName()));
+                try {
+                  var parser = new Parser();
+                  var schema = parser.parse(Files.newInputStream(rec.schema()));
+                  var avroRec = new GenericData.Record(schema);
+                  var prodRec = new ProducerRecord<String, IndexedRecord>(rec.topic(), avroRec);
+                  producer.send(prodRec);
+                } catch (final IOException exc) {
+                  LOGGER.log(
+                      Level.SEVERE,
+                      exc,
+                      () ->
+                          String.format(
+                              "failed to push '%s' to topic '%s'", fileName, rec.topic()));
+                }
+              });
       return ReturnCode.SUCCESS;
     } catch (final Exception exc) {
       LOGGER.log(Level.SEVERE, exc, () -> "producing messages to failed");
@@ -95,7 +96,6 @@ public final class AvroSchemaPusher implements SchemaPusher {
    * @param cli the {@link PushCli} instance for creating the {@link Properties} instance with.
    * @return an instance of {@link Properties}.
    */
-  // CHECKSTYLE.OFF: VariableDeclarationUsageDistance
   private Properties createProps(final PushCli cli) {
     // get info from the cli
     var kafkaBootstrapUrl = cleanUrlEnd.apply(cli.getKafkaBootstrap());

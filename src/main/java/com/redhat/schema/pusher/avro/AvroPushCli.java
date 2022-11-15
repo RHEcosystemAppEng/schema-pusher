@@ -39,8 +39,10 @@ public final class AvroPushCli extends PushCli {
   public Integer call() {
     LOGGER.info("starting");
     LOGGER.info("creating topic and schema pair records");
-    var topicsAndSchemaRecords = getTopicSchemaAggregators().stream()
-        .map(a -> new TopicAndSchema(a.getTopic(), a.getSchemaPath())).toList();
+    var topicsAndSchemaRecords =
+        getTopicSchemaAggregators().stream()
+            .map(a -> new TopicAndSchema(a.getTopic(), a.getSchemaPath()))
+            .toList();
     LOGGER.info("loading schema pusher");
     var schemaPusher = context.getBean(SchemaPusher.class, this);
     LOGGER.info("starting push");

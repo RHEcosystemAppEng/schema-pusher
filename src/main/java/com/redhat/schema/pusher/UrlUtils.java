@@ -3,7 +3,6 @@ package com.redhat.schema.pusher;
 import java.util.function.UnaryOperator;
 
 /** Utility class for working with URL strings. */
-// CHECKSTYLE:OFF: ConstantName
 public final class UrlUtils {
   private static final String CONFLUENT_COMPAT_MAP_FMT = "%s/apis/ccompat/v6";
 

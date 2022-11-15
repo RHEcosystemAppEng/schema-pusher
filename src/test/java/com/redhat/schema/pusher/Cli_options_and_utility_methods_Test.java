@@ -1,20 +1,14 @@
-// editorconfig-checker-disable-max-line-length
 package com.redhat.schema.pusher;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
-import static org.assertj.core.api.Assertions.assertThatNoException;
+import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 import java.nio.file.Paths;
 import java.util.stream.Stream;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.*;
 import picocli.CommandLine;
-import picocli.CommandLine.MissingParameterException;
 
 /** Test cases for the push cli abstraction, namely the cli option and properties. */
 class Cli_options_and_utility_methods_Test {
@@ -82,27 +76,40 @@ class Cli_options_and_utility_methods_Test {
     assertThat(sut.getKafkaBootstrap()).isEqualTo(FAKE_BOOTSTRAP);
     assertThat(sut.getServiceRegistry()).isEqualTo(FAKE_REGISTRY);
     assertThat(sut.getNamingStrategy()).isEqualByComparingTo(strategy);
-    assertThat(sut.getTopicSchemaAggregators()).singleElement()
+    assertThat(sut.getTopicSchemaAggregators())
+        .singleElement()
         .hasFieldOrPropertyWithValue("topic", FAKE_TOPIC)
         .hasFieldOrPropertyWithValue("schemaPath", Paths.get(FAKE_SCHEMA_FILE));
   }
 
   static Stream<Arguments> parsing_all_possible_arguments_combined_should_not_throw_an_exception() {
     return Stream.of(
-      arguments(
-        "--bootstrap-url",
-        "--registry-url",
-        "--naming-strategy",
-        "--topic",
-        "--schema-path",
-        "--property-key",
-        "--property-value",
-        "--truststore-file",
-        "--truststore-password",
-        "--keystore-file",
-        "--keystore-password",
-        NamingStrategy.TOPIC_RECORD),
-      arguments("-b", "-r", "-n", "-t", "-s", "--pk", "--pv", "--tf", "--tp", "--kf", "--kp", NamingStrategy.TOPIC_RECORD));
+        arguments(
+            "--bootstrap-url",
+            "--registry-url",
+            "--naming-strategy",
+            "--topic",
+            "--schema-path",
+            "--property-key",
+            "--property-value",
+            "--truststore-file",
+            "--truststore-password",
+            "--keystore-file",
+            "--keystore-password",
+            NamingStrategy.TOPIC_RECORD),
+        arguments(
+            "-b",
+            "-r",
+            "-n",
+            "-t",
+            "-s",
+            "--pk",
+            "--pv",
+            "--tf",
+            "--tp",
+            "--kf",
+            "--kp",
+            NamingStrategy.TOPIC_RECORD));
   }
 
   @Test
@@ -124,31 +131,32 @@ class Cli_options_and_utility_methods_Test {
 
   @Test
   void parsing_without_specifying_the_kafka_bootstrap_url_should_throw_an_exception() {
-    assertThatExceptionOfType(MissingParameterException.class)
+    assertThatExceptionOfType(CommandLine.MissingParameterException.class)
         .isThrownBy(
-            () -> cmd.parseArgs("-r=" + FAKE_REGISTRY, "-t=" + FAKE_TOPIC, "-s=" + FAKE_SCHEMA_FILE))
+            () ->
+                cmd.parseArgs("-r=" + FAKE_REGISTRY, "-t=" + FAKE_TOPIC, "-s=" + FAKE_SCHEMA_FILE))
         .withMessage("Missing required option: '--bootstrap-url=<kafkaBootstrap>'");
   }
 
   @Test
   void parsing_without_specifying_the_registry_url_should_throw_an_exception() {
-    assertThatExceptionOfType(MissingParameterException.class)
+    assertThatExceptionOfType(CommandLine.MissingParameterException.class)
         .isThrownBy(
-            () -> cmd.parseArgs("-b=" + FAKE_BOOTSTRAP, "-t=" + FAKE_TOPIC, "-s=" + FAKE_SCHEMA_FILE))
+            () ->
+                cmd.parseArgs("-b=" + FAKE_BOOTSTRAP, "-t=" + FAKE_TOPIC, "-s=" + FAKE_SCHEMA_FILE))
         .withMessage("Missing required option: '--registry-url=<serviceRegistry>'");
   }
 
   @Test
   void parsing_without_specifying_a_topic_and_a_schema_path_should_throw_an_exception() {
-    assertThatExceptionOfType(MissingParameterException.class)
-        .isThrownBy(
-            () -> cmd.parseArgs("-b=" + FAKE_BOOTSTRAP, "-r=" + FAKE_REGISTRY))
+    assertThatExceptionOfType(CommandLine.MissingParameterException.class)
+        .isThrownBy(() -> cmd.parseArgs("-b=" + FAKE_BOOTSTRAP, "-r=" + FAKE_REGISTRY))
         .withMessage("Error: Missing required argument(s): (-t=<topic> -s=<schemaPath>)");
   }
 
   @Test
   void parsing_with_a_topic_without_specifying_a_schema_path_should_throw_an_exception() {
-    assertThatExceptionOfType(MissingParameterException.class)
+    assertThatExceptionOfType(CommandLine.MissingParameterException.class)
         .isThrownBy(
             () -> cmd.parseArgs("-b=" + FAKE_BOOTSTRAP, "-r=" + FAKE_REGISTRY, "-t=" + FAKE_TOPIC))
         .withMessage("Error: Missing required argument(s): --schema-path=<schemaPath>");
@@ -156,33 +164,46 @@ class Cli_options_and_utility_methods_Test {
 
   @Test
   void parsing_with_a_schema_path_without_specifying_a_topic_should_throw_an_exception() {
-    assertThatExceptionOfType(MissingParameterException.class)
+    assertThatExceptionOfType(CommandLine.MissingParameterException.class)
         .isThrownBy(
-            () -> cmd.parseArgs("-b=" + FAKE_BOOTSTRAP, "-r=" + FAKE_REGISTRY, "-s=" + FAKE_SCHEMA_FILE))
+            () ->
+                cmd.parseArgs(
+                    "-b=" + FAKE_BOOTSTRAP, "-r=" + FAKE_REGISTRY, "-s=" + FAKE_SCHEMA_FILE))
         .withMessage("Error: Missing required argument(s): --topic=<topic>");
   }
 
   @Test
   void parsing_with_two_topics_and_one_a_schema_path_should_throw_an_exception() {
-    assertThatExceptionOfType(MissingParameterException.class)
+    assertThatExceptionOfType(CommandLine.MissingParameterException.class)
         .isThrownBy(
-            () -> cmd.parseArgs(
-              "-b=" + FAKE_BOOTSTRAP, "-r=" + FAKE_REGISTRY, "-t=" + FAKE_TOPIC, "-s=" + FAKE_SCHEMA_FILE, "-t=anothertopic"))
+            () ->
+                cmd.parseArgs(
+                    "-b=" + FAKE_BOOTSTRAP,
+                    "-r=" + FAKE_REGISTRY,
+                    "-t=" + FAKE_TOPIC,
+                    "-s=" + FAKE_SCHEMA_FILE,
+                    "-t=anothertopic"))
         .withMessage("Error: Missing required argument(s): --schema-path=<schemaPath>");
   }
 
   @Test
   void parsing_with_two_schema_paths_and_one_topic_should_throw_an_exception() {
-    assertThatExceptionOfType(MissingParameterException.class)
+    assertThatExceptionOfType(CommandLine.MissingParameterException.class)
         .isThrownBy(
-            () -> cmd.parseArgs(
-              "-b=" + FAKE_BOOTSTRAP, "-r=" + FAKE_REGISTRY, "-t=" + FAKE_TOPIC, "-s=" + FAKE_SCHEMA_FILE, "-s=/another/schema.json"))
+            () ->
+                cmd.parseArgs(
+                    "-b=" + FAKE_BOOTSTRAP,
+                    "-r=" + FAKE_REGISTRY,
+                    "-t=" + FAKE_TOPIC,
+                    "-s=" + FAKE_SCHEMA_FILE,
+                    "-s=/another/schema.json"))
         .withMessage("Error: Missing required argument(s): --topic=<topic>");
   }
 
   @Test
-  void parsing_while_specifying_the_truststore_file_but_not_the_password_should_throw_an_exception() {
-    assertThatExceptionOfType(MissingParameterException.class)
+  void
+      parsing_while_specifying_the_truststore_file_but_not_the_password_should_throw_an_exception() {
+    assertThatExceptionOfType(CommandLine.MissingParameterException.class)
         .isThrownBy(
             () ->
                 cmd.parseArgs(
@@ -191,12 +212,14 @@ class Cli_options_and_utility_methods_Test {
                     "-t=" + FAKE_TOPIC,
                     "-s=" + FAKE_SCHEMA_FILE,
                     "--tf=" + FAKE_TRUSTSTORE_FILE))
-        .withMessage("Error: Missing required argument(s): --truststore-password=<truststorePassword>");
+        .withMessage(
+            "Error: Missing required argument(s): --truststore-password=<truststorePassword>");
   }
 
   @Test
-  void parsing_while_specifying_the_truststore_password_but_not_the_file_should_throw_an_exception() {
-    assertThatExceptionOfType(MissingParameterException.class)
+  void
+      parsing_while_specifying_the_truststore_password_but_not_the_file_should_throw_an_exception() {
+    assertThatExceptionOfType(CommandLine.MissingParameterException.class)
         .isThrownBy(
             () ->
                 cmd.parseArgs(
@@ -210,7 +233,7 @@ class Cli_options_and_utility_methods_Test {
 
   @Test
   void parsing_while_specifying_the_keystore_file_but_not_the_password_should_throw_an_exception() {
-    assertThatExceptionOfType(MissingParameterException.class)
+    assertThatExceptionOfType(CommandLine.MissingParameterException.class)
         .isThrownBy(
             () ->
                 cmd.parseArgs(
@@ -224,7 +247,7 @@ class Cli_options_and_utility_methods_Test {
 
   @Test
   void parsing_while_specifying_the_keystore_password_but_not_the_file_should_throw_an_exception() {
-    assertThatExceptionOfType(MissingParameterException.class)
+    assertThatExceptionOfType(CommandLine.MissingParameterException.class)
         .isThrownBy(
             () ->
                 cmd.parseArgs(
@@ -238,7 +261,7 @@ class Cli_options_and_utility_methods_Test {
 
   @Test
   void parsing_while_specifying_the_property_key_but_not_the_value_should_throw_an_exception() {
-    assertThatExceptionOfType(MissingParameterException.class)
+    assertThatExceptionOfType(CommandLine.MissingParameterException.class)
         .isThrownBy(
             () ->
                 cmd.parseArgs(
@@ -252,7 +275,7 @@ class Cli_options_and_utility_methods_Test {
 
   @Test
   void parsing_while_specifying_the_property_value_but_not_the_key_should_throw_an_exception() {
-    assertThatExceptionOfType(MissingParameterException.class)
+    assertThatExceptionOfType(CommandLine.MissingParameterException.class)
         .isThrownBy(
             () ->
                 cmd.parseArgs(
