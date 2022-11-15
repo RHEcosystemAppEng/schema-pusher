@@ -39,6 +39,7 @@
     <maven-enforcer-plugin.version>3.0.0</maven-enforcer-plugin.version>
     <maven-jar-plugin.version>3.2.0</maven-jar-plugin.version>
     <maven-resources-plugin.version>3.2.0</maven-resources-plugin.version>
+    <fmt-maven-plugin.version>2.19</fmt-maven-plugin.version>
     <git-commit-id-maven-plugin.version>5.0.0</git-commit-id-maven-plugin.version>
     <jacoco-maven-plugin.version>0.8.7</jacoco-maven-plugin.version>
     <junit-platform-maven-plugin.version>1.1.6</junit-platform-maven-plugin.version>
@@ -302,6 +303,11 @@
         </plugin>
         <!-- Third Party Plugins -->
         <plugin>
+          <groupId>com.spotify.fmt</groupId>
+          <artifactId>fmt-maven-plugin</artifactId>
+          <version>${fmt-maven-plugin.version}</version>
+        </plugin>
+        <plugin>
           <groupId>de.sormuras.junit</groupId>
           <artifactId>junit-platform-maven-plugin</artifactId>
           <version>${junit-platform-maven-plugin.version}</version>
@@ -447,6 +453,21 @@
             <banCircularDependencies />
           </rules>
         </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>com.spotify.fmt</groupId>
+        <artifactId>fmt-maven-plugin</artifactId>
+        <configuration>
+          <failOnError>error</failOnError>
+        </configuration>
+        <executions>
+            <execution>
+                <goals>
+                    <goal>check</goal>
+                </goals>
+            </execution>
+        </executions>
       </plugin>
 
       <plugin>
