@@ -7,8 +7,7 @@ import picocli.CommandLine.IVersionProvider;
 
 /**
  * Helper class implementing {@code picocli.CommandLine.IVersionProvider} providing versioning via
- * manifest entries.
- * Use {@value #APP_NAME_KEY} and {@value #APP_VERSION_KEY} in your manifest.
+ * manifest entries. Use {@value #APP_NAME_KEY} and {@value #APP_VERSION_KEY} in your manifest.
  */
 public final class ManifestVersionProvider implements IVersionProvider {
   private static final String APP_NAME_KEY = "PushCLI-Application-Name";

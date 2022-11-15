@@ -6,21 +6,20 @@ import io.confluent.kafka.serializers.subject.TopicRecordNameStrategy;
 import io.confluent.kafka.serializers.subject.strategy.SubjectNameStrategy;
 
 /** Enum for relaying the subject naming strategy. */
-// CHECKSTYLE:OFF: IllegalIdentifierName
 public enum NamingStrategy {
   /**
-   * Use {@code io.confluent.kafka.serializers.subject.TopicNameStrategy},
-   * e.g. {@code exampletopic-value}.
+   * Use {@code io.confluent.kafka.serializers.subject.TopicNameStrategy}, e.g. {@code
+   * exampletopic-value}.
    */
   TOPIC(TopicNameStrategy.class),
   /**
-   * Use {@code io.confluent.kafka.serializers.subject.RecordNameStrategy},
-   * e.g. {@code com.example.RecordName}.
+   * Use {@code io.confluent.kafka.serializers.subject.RecordNameStrategy}, e.g. {@code
+   * com.example.RecordName}.
    */
   RECORD(RecordNameStrategy.class),
   /**
-   * Use {@code io.confluent.kafka.serializers.subject.TopicRecordNameStrategy},
-   * e.g. {@code exampletopic-com.example.RecordName}.
+   * Use {@code io.confluent.kafka.serializers.subject.TopicRecordNameStrategy}, e.g. {@code
+   * exampletopic-com.example.RecordName}.
    */
   TOPIC_RECORD(TopicRecordNameStrategy.class);
 
@@ -33,8 +32,8 @@ public enum NamingStrategy {
   /**
    * Get the relayed strategy class.
    *
-   * @return a Class extending
-   *     {@code io.confluent.kafka.serializers.subject.strategy.SubjectNameStrategy}.
+   * @return a Class extending {@code
+   *     io.confluent.kafka.serializers.subject.strategy.SubjectNameStrategy}.
    */
   public Class<?> getStrategy() {
     return this.strategy;

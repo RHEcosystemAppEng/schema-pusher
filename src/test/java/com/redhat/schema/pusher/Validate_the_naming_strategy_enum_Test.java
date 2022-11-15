@@ -3,12 +3,9 @@ package com.redhat.schema.pusher;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.DynamicTest.dynamicTest;
 
-import io.confluent.kafka.serializers.subject.RecordNameStrategy;
-import io.confluent.kafka.serializers.subject.TopicNameStrategy;
-import io.confluent.kafka.serializers.subject.TopicRecordNameStrategy;
+import io.confluent.kafka.serializers.subject.*;
 import java.util.stream.Stream;
-import org.junit.jupiter.api.DynamicTest;
-import org.junit.jupiter.api.TestFactory;
+import org.junit.jupiter.api.*;
 
 /** Verify the members of the naming strategy enum. */
 class Validate_the_naming_strategy_enum_Test {

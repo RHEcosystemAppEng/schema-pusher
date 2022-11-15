@@ -18,8 +18,8 @@ public final class MainApp {
   }
 
   /**
-   * Creates a DI context, grabs the {@link PushCli} implementation and loads a
-   * {@code picocli.CommandLine} instance.
+   * Creates a DI context, grabs the {@link PushCli} implementation and loads a {@code
+   * picocli.CommandLine} instance.
    *
    * @param args the CLI argument pairs for parsing.
    */

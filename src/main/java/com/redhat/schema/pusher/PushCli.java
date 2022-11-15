@@ -53,12 +53,12 @@ public abstract class PushCli implements Callable<Integer> {
     @Option(
         names = {"-s", "--schema-path"},
         description = "The schema path for the topic, correlated with a topic.",
-        required = true
-    )
+        required = true)
     private Path schemaPath;
 
     /**
      * Returns the topic.
+     *
      * @return the {@link String} topic.
      */
     public String getTopic() {
@@ -67,6 +67,7 @@ public abstract class PushCli implements Callable<Integer> {
 
     /**
      * Returns the schema path.
+     *
      * @return the schema file {@link Path}.
      */
     public Path getSchemaPath() {
@@ -90,6 +91,7 @@ public abstract class PushCli implements Callable<Integer> {
 
     /**
      * Returns the property key.
+     *
      * @return the property key.
      */
     public String getPropertyKey() {
@@ -98,6 +100,7 @@ public abstract class PushCli implements Callable<Integer> {
 
     /**
      * Returns the property value.
+     *
      * @return the property value.
      */
     public String getPropertyValue() {
@@ -121,6 +124,7 @@ public abstract class PushCli implements Callable<Integer> {
 
     /**
      * Returns the truststore file path.
+     *
      * @return the truststore file path.
      */
     public String getTruststoreFile() {
@@ -129,6 +133,7 @@ public abstract class PushCli implements Callable<Integer> {
 
     /**
      * Returns the truststore password.
+     *
      * @return the truststore password.
      */
     public String getTruststorePassword() {
@@ -152,6 +157,7 @@ public abstract class PushCli implements Callable<Integer> {
 
     /**
      * Returns the keystore file path.
+     *
      * @return the keystore file path.
      */
     public String getKeystoreFile() {
@@ -160,6 +166,7 @@ public abstract class PushCli implements Callable<Integer> {
 
     /**
      * Returns the keystore password.
+     *
      * @return the keystore password.
      */
     public String getKeystorePassword() {

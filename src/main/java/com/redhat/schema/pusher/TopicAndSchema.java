@@ -8,4 +8,4 @@ import java.nio.file.Path;
  * @param topic the topic for the record.
  * @param schema the path for the schema file.
  */
-public record TopicAndSchema(String topic, Path schema){}
+public record TopicAndSchema(String topic, Path schema) {}

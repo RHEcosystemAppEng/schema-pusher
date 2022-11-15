@@ -18,15 +18,14 @@ import org.apache.kafka.common.serialization.Serializer;
 
 /**
  * This a custom version of both {@code io.confluent.kafka.serializers.KafkaAvroSerializer} and
- * {@code io.confluent.kafka.serializers.AbstractKafkaAvroSerializer}.
- * The original implementation uses {@code org.apache.avro.io.DatumWriter} to produce a message
- * based on the schema.
- * Since this application is used for producing schema messages only, the original implementation,
- * although worked, threw exceptions that needed to be hard-coded ignored. Hence, we created this
- * custom implementation and ignored no exception.
+ * {@code io.confluent.kafka.serializers.AbstractKafkaAvroSerializer}. The original implementation
+ * uses {@code org.apache.avro.io.DatumWriter} to produce a message based on the schema. Since this
+ * application is used for producing schema messages only, the original implementation, although
+ * worked, threw exceptions that needed to be hard-coded ignored. Hence, we created this custom
+ * implementation and ignored no exception.
  */
-public final class AvroCustomSerializer
-    extends AbstractKafkaSchemaSerDe implements Serializer<Object> {
+public final class AvroCustomSerializer extends AbstractKafkaSchemaSerDe
+    implements Serializer<Object> {
   private boolean isKey;
 
   private boolean normalizeSchema;
@@ -86,7 +85,6 @@ public final class AvroCustomSerializer
   }
 
   // TODO the schema argument should be finalized
-  // CHECKSTYLE.OFF: FinalParameters
   private byte[] serializeImpl(final String subject, AvroSchema schema)
       throws SerializationException, InvalidConfigurationException {
     requireNonNull(schemaRegistry);
@@ -99,8 +97,8 @@ public final class AvroCustomSerializer
         id = schemaRegistry.register(subject, schema, normalizeSchema);
       } else if (useSchemaId >= 0) {
         restClientErrorMsg = "Error retrieving schema ID";
-        schema = (AvroSchema) lookupSchemaBySubjectAndId(
-          subject, useSchemaId, schema, idCompatStrict);
+        schema =
+            (AvroSchema) lookupSchemaBySubjectAndId(subject, useSchemaId, schema, idCompatStrict);
         id = schemaRegistry.getId(subject, schema);
       } else if (useLatestVersion) {
         restClientErrorMsg = "Error retrieving latest version of Avro schema";

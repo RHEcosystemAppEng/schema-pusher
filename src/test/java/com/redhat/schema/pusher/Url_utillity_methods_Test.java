@@ -6,8 +6,7 @@ import static org.junit.jupiter.params.provider.Arguments.arguments;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.*;
 
 /** Test cases for the url utility methods class. */
 class Url_utillity_methods_Test {
