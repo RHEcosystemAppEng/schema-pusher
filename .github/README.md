@@ -229,22 +229,12 @@ Push schemas to Red Hat's Service Registry
 | Command                 | Description                               |
 | ----------------------- | ----------------------------------------- |
 | `mvn package`           | tests and builds the java application.    |
-| `mvn verify`            | tests, build, verifies the code coverage. |
+| `mvn verify`            | tests, build, verifies code formatting.   |
 | `mvn k8s:build`         | builds the docker image.                  |
 | `mvn k8s:push`          | push the docker image to [Quay.io][15].   |
 | `mvn help:all-profiles` | will display the existing profiles.       |
 
-> The *dev* profile will turn off enforcing and coverage checks.</br>
-> The *cov* profile will create a *Jacoco* html coverage report.
-
-## Linting locally
-
-```shell
-docker run --rm -e RUN_LOCAL=true -e IGNORE_GITIGNORED_FILES=true -e VALIDATE_BASH=true \
--e VALIDATE_DOCKERFILE_HADOLINT=true -e VALIDATE_EDITORCONFIG=true -e VALIDATE_GITHUB_ACTIONS=true \
--e VALIDATE_JAVA=true -e VALIDATE_JSON=true -e VALIDATE_MARKDOWN=true  -e VALIDATE_XML=true \
--e VALIDATE_YAML=true -v ${PWD}:/tmp/lint ghcr.io/github/super-linter:slim-v4
-```
+> The *dev* profile will turn off enforcing.</br>
 
 ### CI
 
